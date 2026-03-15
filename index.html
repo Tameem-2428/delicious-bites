@@ -205,7 +205,7 @@
                             <span contenteditable="${isAdmin}" onblur="siteData.menu[${i}].price=this.innerText" class="text-2xl font-black text-orange-600">${item.price}</span>
                             <button onclick="addToCart(${i})" class="bg-black text-white w-12 h-12 rounded-2xl active:scale-90 flex items-center justify-center"><i class="fas fa-plus"></i></button>
                         </div>
-                        <button onclick="siteData.menu.splice(${i},1);renderMenu()" class="admin-only absolute -top-2 -right-2 bg-red-500 text-white w-8 h-8 rounded-full shadow-lg flex items-center justify-center font-bold">×</button>
+                        <button onclick="siteData.menu.splice(${i},1);renderMenu()" class="admin-only absolute -top-2 -right-2 bg-red-500 text-white w-8 h-8 rounded-full shadow-lg flex items-center justify-center font-bold">Ã—</button>
                     </div>`;
             });
         }
@@ -230,7 +230,7 @@
             const list = document.getElementById('cart-items'); let itemsTotal = 0; list.innerHTML = '';
             cart.forEach((item, i) => {
                 itemsTotal += parseInt(item.price.replace(/[^0-9]/g, '')) || 0;
-                list.innerHTML += `<div class="flex justify-between items-center bg-slate-50 p-4 rounded-2xl border border-slate-100"><span class="font-bold text-xs uppercase text-black">${item.name}</span><button onclick="cart.splice(${i},1);updateCart()" class="text-red-400 font-black px-2">×</button></div>`;
+                list.innerHTML += `<div class="flex justify-between items-center bg-slate-50 p-4 rounded-2xl border border-slate-100"><span class="font-bold text-xs uppercase text-black">${item.name}</span><button onclick="cart.splice(${i},1);updateCart()" class="text-red-400 font-black px-2">Ã—</button></div>`;
             });
             let deliveryCharge = 0; let noteText = "";
             if (cart.length > 0) { if (cart.length < 5) { deliveryCharge = 100; noteText = `(add ${5 - cart.length} more for free)`; } else { deliveryCharge = 0; noteText = "(free applied!)"; } }
@@ -247,7 +247,7 @@
             if(!name || !addressField.value || !cart.length) return alert("Please fill your name, address, and add items!");
             
             let msg = `*?? ORDER - ${siteData.title}*%0A*Name:* ${name}%0A*Address:* ${addressField.value}%0A*Payment:* ${paymentMethod}%0A%0A*Items:*%0A`;
-            cart.forEach(item => msg += `• ${item.name} (${item.price.replace('&#8377;', 'Rs. ')})%0A`);
+            cart.forEach(item => msg += `Â• ${item.name} (${item.price.replace('&#8377;', 'Rs. ')})%0A`);
             msg += `%0A*TOTAL: Rs. ${document.getElementById('cart-total').innerText}*`;
             window.open(`https://wa.me/${siteData.wa}?text=${msg}`, '_blank');
         }
