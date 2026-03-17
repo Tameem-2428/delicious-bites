@@ -13,41 +13,15 @@
         @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@1,800&family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap');
         body { font-family: 'Plus Jakarta Sans', sans-serif; background: #fafafa; scroll-behavior: smooth; }
         .hero-title { font-family: 'Playfair Display', serif; font-style: italic; font-weight: 800; }
-        
         .admin-only { display: none !important; }
         body.admin-mode .admin-only { display: flex !important; }
-
         body.admin-mode [contenteditable="true"] { outline: 2px dashed #ea580c; outline-offset: 4px; background: rgba(234, 88, 12, 0.05); }
-        
-        .menu-card-img-container {
-            position: relative;
-            overflow: hidden;
-            border-radius: 1.8rem;
-            height: 14rem;
-            background: #f1f5f9;
-        }
-
-        .admin-image-overlay {
-            display: none;
-            position: absolute;
-            inset: 0;
-            background: rgba(0,0,0,0.4);
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: 900;
-            font-size: 10px;
-            text-transform: uppercase;
-            cursor: pointer;
-            z-index: 10;
-        }
+        .menu-card-img-container { position: relative; overflow: hidden; border-radius: 1.8rem; height: 14rem; background: #f1f5f9; }
+        .admin-image-overlay { display: none; position: absolute; inset: 0; background: rgba(0,0,0,0.4); align-items: center; justify-content: center; color: white; font-weight: 900; font-size: 10px; text-transform: uppercase; cursor: pointer; z-index: 10; }
         body.admin-mode .admin-image-overlay { display: flex; }
-
-        #gear-btn { display: none; }
         #cart-sidebar { transition: transform 0.4s ease; transform: translateX(100%); z-index: 50; }
         #cart-sidebar.open { transform: translateX(0); }
-        .payment-pill.active { background: #ea580c; color: white; border-color: #ea580c; }
-        #admin-trigger { cursor: pointer; user-select: none; }
+        .cat-tab.active { background: #ea580c; color: white; border-color: #ea580c; }
     </style>
 </head>
 <body class="text-slate-900 overflow-x-hidden">
@@ -56,6 +30,14 @@
         <div class="max-w-7xl mx-auto flex flex-wrap justify-center items-center gap-4 text-xs font-bold uppercase">
             WA (91): <input type="text" id="wa-input" class="bg-orange-700 px-2 py-1 rounded outline-none w-28">
             QR URL: <input type="text" id="qr-input" class="bg-orange-700 px-2 py-1 rounded outline-none w-28 text-black">
+            <div class="flex items-center gap-2 bg-orange-700 px-3 py-1 rounded">
+                ADD AS: 
+                <select id="new-item-cat" class="bg-transparent outline-none font-black cursor-pointer">
+                    <option value="veg" class="text-black">VEG</option>
+                    <option value="nonveg" class="text-black">NON-VEG</option>
+                    <option value="dessert" class="text-black">DESSERT</option>
+                </select>
+            </div>
             <button onclick="publishToCloud()" class="bg-black px-4 py-1 rounded-full shadow-lg">Save All Changes</button>
             <button onclick="toggleAdmin()" class="opacity-70">Exit Admin</button>
         </div>
@@ -63,17 +45,14 @@
 
     <nav class="fixed top-0 w-full z-40 bg-white/80 backdrop-blur-md px-6 py-4 flex justify-between items-center border-b border-slate-100">
         <div class="flex items-center gap-2">
-            <div id="admin-trigger" ondblclick="checkAdminPin()" class="w-10 h-10 bg-orange-600 rounded-xl flex items-center justify-center text-white">
+            <div id="admin-trigger" ondblclick="checkAdminPin()" class="w-10 h-10 bg-orange-600 rounded-xl flex items-center justify-center text-white cursor-pointer">
                 <i class="fas fa-utensils"></i>
             </div>
             <h1 id="site-title" class="edit-text text-xl font-black italic">DELICIOUS BITES</h1>
         </div>
-        <div class="flex items-center gap-3">
-            <button id="gear-btn" onclick="toggleAdmin()" class="p-3 text-orange-600 bg-orange-50 rounded-full"><i class="fas fa-cog text-xl"></i></button>
-            <button onclick="toggleCart()" class="bg-black text-white px-6 py-2.5 rounded-full font-bold text-sm flex items-center gap-2 relative">
-                <i class="fas fa-shopping-bag"></i> <span id="cart-count">0</span>
-            </button>
-        </div>
+        <button onclick="toggleCart()" class="bg-black text-white px-6 py-2.5 rounded-full font-bold text-sm flex items-center gap-2 relative">
+            <i class="fas fa-shopping-bag"></i> <span id="cart-count">0</span>
+        </button>
     </nav>
 
     <header class="min-h-screen grid lg:grid-cols-2 pt-16">
@@ -89,8 +68,14 @@
     </header>
 
     <section id="menu" class="max-w-7xl mx-auto px-6 py-24">
-        <div class="flex justify-between items-end mb-16">
+        <div class="flex flex-col md:flex-row justify-between items-center gap-6 mb-16">
             <h3 class="text-5xl font-black italic">Menu</h3>
+            <div class="flex bg-slate-100 p-1.5 rounded-2xl gap-1">
+                <button onclick="filterCat('all')" id="cat-all" class="cat-tab active px-6 py-2 rounded-xl font-bold text-xs uppercase transition-all">All</button>
+                <button onclick="filterCat('veg')" id="cat-veg" class="cat-tab px-6 py-2 rounded-xl font-bold text-xs uppercase transition-all">Veg</button>
+                <button onclick="filterCat('nonveg')" id="cat-nonveg" class="cat-tab px-6 py-2 rounded-xl font-bold text-xs uppercase transition-all">Non-Veg</button>
+                <button onclick="filterCat('dessert')" id="cat-dessert" class="cat-tab px-6 py-2 rounded-xl font-bold text-xs uppercase transition-all">Desserts</button>
+            </div>
             <button onclick="addNewDish()" class="admin-only bg-green-600 text-white px-6 py-2 rounded-xl font-bold shadow-lg">+ Add Item</button>
         </div>
         <div id="menu-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12"></div>
@@ -98,49 +83,22 @@
 
     <div id="cart-sidebar" class="fixed top-0 right-0 h-full w-full max-w-md bg-white shadow-2xl flex flex-col">
         <div class="p-8 border-b flex justify-between items-center">
-            <h4 id="label-your-order" class="edit-text text-2xl font-black italic">Your Order</h4>
+            <h4 class="text-2xl font-black italic">Your Order</h4>
             <button onclick="toggleCart()" class="text-slate-300 text-4xl">&times;</button>
         </div>
-        
         <div class="flex-1 overflow-y-auto p-8 space-y-6">
             <div id="cart-items" class="space-y-4"></div>
-            
-            <div class="space-y-3 pt-4">
+            <div class="space-y-3 pt-4 px-8">
                 <input type="text" id="cust-name" placeholder="Full Name" class="w-full p-4 rounded-xl bg-slate-100 font-bold text-sm outline-none">
                 <textarea id="cust-addr" placeholder="Full Delivery Address" class="w-full p-4 rounded-xl bg-slate-100 font-bold text-sm h-20 outline-none"></textarea>
             </div>
-
-            <div class="space-y-4 pt-4">
-                <p id="label-payment-method" class="edit-text text-[10px] font-black uppercase text-slate-400">Payment</p>
-                <div class="grid grid-cols-2 gap-3">
-                    <button onclick="setPayment('Online')" id="pay-online" class="payment-pill active border-2 border-slate-100 py-3 rounded-2xl font-bold text-sm">Online (QR)</button>
-                    <button onclick="setPayment('COD')" id="pay-cod" class="payment-pill border-2 border-slate-100 py-3 rounded-2xl font-bold text-sm">Cash (COD)</button>
-                </div>
-            </div>
-
-            <div id="qr-section" class="flex flex-col items-center py-6 border-2 border-dashed border-orange-200 rounded-3xl bg-orange-50/30">
-                <img id="display-qr" src="" class="w-40 h-40 bg-white p-2 rounded-xl">
-                <p id="label-scan-pay" class="edit-text text-[9px] text-slate-400 mt-4 font-black uppercase text-center">Scan to Pay</p>
-            </div>
         </div>
-
         <div class="p-8 border-t bg-slate-50">
-            <div class="space-y-2 mb-4">
-                <div class="flex justify-between text-xs font-bold text-slate-400 uppercase">
-                    <span id="label-subtotal" class="edit-text">Subtotal</span>
-                    <span>&#8377;<span id="subtotal">0</span></span>
-                </div>
-                <div class="flex justify-between text-xs font-bold uppercase">
-                    <span><span id="label-delivery" class="edit-text">Delivery</span> <span id="delivery-note" class="text-[10px] lowercase font-medium"></span></span>
-                    <span id="delivery-cost-text">&#8377;0</span>
-                </div>
-                <hr class="border-slate-200 my-2">
-                <div class="flex justify-between items-center">
-                    <span id="label-grand-total" class="edit-text font-bold text-slate-900 text-xs uppercase">Grand Total</span>
-                    <span class="text-3xl font-black text-orange-600">&#8377;<span id="cart-total">0</span></span>
-                </div>
+            <div class="flex justify-between items-center mb-6">
+                <span class="font-bold text-slate-900 text-xs uppercase">Grand Total</span>
+                <span class="text-3xl font-black text-orange-600">&#8377;<span id="cart-total">0</span></span>
             </div>
-            <button onclick="sendOrder()" class="w-full bg-green-600 text-white py-5 rounded-2xl font-black text-lg shadow-lg active:scale-95 transition-all">PLACE ORDER</button>
+            <button onclick="sendOrder()" class="w-full bg-green-600 text-white py-5 rounded-2xl font-black text-lg shadow-lg">PLACE ORDER</button>
         </div>
     </div>
 
@@ -154,16 +112,14 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        let siteData = { 
-            wa: "9100000000", qr: "", title: "DELICIOUS BITES", heroTitle: "Tasty Memories.", heroDesc: "Handcrafted snacks.", heroImg: "https://images.unsplash.com/photo-1601050690597-df056fb0179a?w=1200", menu: [],
-            labels: { order: "Your Order", payMethod: "Payment", scanPay: "Scan to Pay", sub: "Subtotal", del: "Delivery", grand: "Grand Total" }
-        };
-        let cart = [];
-        let paymentMethod = 'Online';
+        let siteData = { wa: "9100000000", qr: "", title: "DELICIOUS BITES", menu: [] };
+        let cart = []; // We'll store objects: { name, price, quantity, originalIndex }
+        let currentFilter = 'all';
 
         db.ref('siteData').on('value', (snap) => {
             if (snap.exists()) { 
                 siteData = snap.val(); 
+                if(!siteData.menu) siteData.menu = [];
                 applyDataToScreen(); 
             }
         });
@@ -175,39 +131,126 @@
             document.getElementById('hero-img').src = siteData.heroImg;
             document.getElementById('wa-input').value = siteData.wa;
             document.getElementById('qr-input').value = siteData.qr;
-            document.getElementById('display-qr').src = siteData.qr;
             renderMenu();
         }
 
-        function checkAdminPin() {
-            if(prompt("Enter Admin PIN:") === "5566") { toggleAdmin(); document.getElementById('gear-btn').style.display = 'block'; }
-        }
-
+        function checkAdminPin() { if(prompt("Enter Admin PIN:") === "5566") { toggleAdmin(); } }
         function toggleAdmin() {
             const mode = document.body.classList.toggle('admin-mode');
             document.querySelectorAll('.edit-text').forEach(el => el.contentEditable = mode);
             renderMenu();
         }
 
+        function filterCat(cat) {
+            currentFilter = cat;
+            document.querySelectorAll('.cat-tab').forEach(btn => btn.classList.remove('active'));
+            document.getElementById('cat-' + cat).classList.add('active');
+            renderMenu();
+        }
+
         function renderMenu() {
             const grid = document.getElementById('menu-grid'); grid.innerHTML = '';
             const isAdmin = document.body.classList.contains('admin-mode');
-            if(!siteData.menu) siteData.menu = [];
+            
             siteData.menu.forEach((item, i) => {
+                const itemCat = item.category || 'veg'; 
+                if(currentFilter !== 'all' && itemCat !== currentFilter) return;
+
+                const catLabel = itemCat === 'veg' ? 'VEG' : (itemCat === 'nonveg' ? 'NON-VEG' : 'DESSERT');
+                const catColor = itemCat === 'veg' ? 'text-green-600' : (itemCat === 'nonveg' ? 'text-red-600' : 'text-purple-600');
+                
+                // Check if item is already in cart to show Qty Bar or ADD button
+                const cartItem = cart.find(c => c.originalIndex === i);
+                const quantity = cartItem ? cartItem.quantity : 0;
+
                 grid.innerHTML += `
-                    <div class="bg-white rounded-[2.5rem] p-5 border border-slate-100 shadow-sm relative">
+                    <div class="bg-white rounded-[2.5rem] p-5 border border-slate-100 shadow-sm relative text-left">
                         <div class="menu-card-img-container">
                             <img src="${item.img}" class="w-full h-full object-cover">
                             <div onclick="changeItemImg(${i})" class="admin-image-overlay">Replace Img</div>
                         </div>
-                        <h4 contenteditable="${isAdmin}" onblur="siteData.menu[${i}].name=this.innerText" class="text-xl font-black px-2 mt-6">${item.name}</h4>
-                        <div class="flex justify-between items-center mt-6 px-2">
-                            <span contenteditable="${isAdmin}" onblur="siteData.menu[${i}].price=this.innerText" class="text-2xl font-black text-orange-600">${item.price}</span>
-                            <button onclick="addToCart(${i})" class="bg-black text-white w-12 h-12 rounded-2xl active:scale-90 flex items-center justify-center"><i class="fas fa-plus"></i></button>
+                        <div class="mt-6 px-2">
+                             <p class="text-[10px] font-black uppercase tracking-widest ${catColor} mb-1">${catLabel}</p>
+                             <h4 contenteditable="${isAdmin}" onblur="siteData.menu[${i}].name=this.innerText" class="text-xl font-black">${item.name}</h4>
                         </div>
-                        <button onclick="siteData.menu.splice(${i},1);renderMenu()" class="admin-only absolute -top-2 -right-2 bg-red-500 text-white w-8 h-8 rounded-full shadow-lg flex items-center justify-center font-bold">×</button>
+                        <div class="flex justify-between items-center mt-4 px-2">
+                            <span contenteditable="${isAdmin}" onblur="siteData.menu[${i}].price=this.innerText" class="text-2xl font-black text-orange-600">${item.price}</span>
+                            
+                            <div class="relative w-28 h-10">
+                                <button onclick="handleInitialAdd(${i})" 
+                                    class="${quantity > 0 ? 'hidden' : 'flex'} absolute inset-0 bg-white border border-slate-200 text-orange-600 font-bold rounded-xl items-center justify-center shadow-sm active:scale-95 transition-all uppercase text-xs">
+                                    Add
+                                </button>
+                                
+                                <div class="${quantity > 0 ? 'flex' : 'hidden'} absolute inset-0 bg-orange-600 text-white rounded-xl items-center justify-between px-2 shadow-lg">
+                                    <button onclick="changeQty(${i}, -1)" class="w-6 h-6 flex items-center justify-center font-bold text-lg">-</button>
+                                    <span class="font-bold text-sm">${quantity}</span>
+                                    <button onclick="changeQty(${i}, 1)" class="w-6 h-6 flex items-center justify-center font-bold text-lg">+</button>
+                                </div>
+                            </div>
+                        </div>
+                        <button onclick="siteData.menu.splice(${i},1);renderMenu()" class="admin-only absolute -top-2 -right-2 bg-red-500 text-white w-8 h-8 rounded-full flex items-center justify-center font-bold">×</button>
                     </div>`;
             });
+        }
+
+        // Domino's Style: First click adds 1 and reveals bar
+        function handleInitialAdd(index) {
+            const item = siteData.menu[index];
+            cart.push({ ...item, quantity: 1, originalIndex: index });
+            updateCart();
+            renderMenu();
+        }
+
+        // Domino's Style: Plus/Minus updates cart immediately
+        function changeQty(originalIndex, delta) {
+            const cartItemIndex = cart.findIndex(c => c.originalIndex === originalIndex);
+            if (cartItemIndex > -1) {
+                cart[cartItemIndex].quantity += delta;
+                if (cart[cartItemIndex].quantity <= 0) {
+                    cart.splice(cartItemIndex, 1); // Remove if 0
+                }
+            }
+            updateCart();
+            renderMenu();
+        }
+
+        function updateCart() {
+            const list = document.getElementById('cart-items'); 
+            let total = 0; 
+            let totalItems = 0;
+            list.innerHTML = '';
+
+            cart.forEach((item, i) => {
+                const priceNum = parseInt(item.price.replace(/[^0-9]/g, '')) || 0;
+                total += (priceNum * item.quantity);
+                totalItems += item.quantity;
+
+                list.innerHTML += `
+                    <div class="flex justify-between items-center bg-slate-50 p-4 rounded-2xl mx-8">
+                        <div>
+                            <p class="font-bold text-xs uppercase">${item.name}</p>
+                            <p class="text-[10px] text-slate-400 font-bold">${item.quantity} x ${item.price}</p>
+                        </div>
+                        <button onclick="removeCompletely(${i})" class="text-red-400 font-black px-2">×</button>
+                    </div>`;
+            });
+            document.getElementById('cart-total').innerText = total;
+            document.getElementById('cart-count').innerText = totalItems;
+        }
+
+        function removeCompletely(cartIndex) {
+            cart.splice(cartIndex, 1);
+            updateCart();
+            renderMenu();
+        }
+
+        function toggleCart() { document.getElementById('cart-sidebar').classList.toggle('open'); }
+
+        function addNewDish() { 
+            const cat = document.getElementById('new-item-cat').value;
+            siteData.menu.unshift({ name: "New Dish", price: "₹150", img: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400", category: cat }); 
+            renderMenu(); 
         }
 
         function publishToCloud() {
@@ -219,38 +262,18 @@
             db.ref('siteData').set(siteData).then(() => alert("Saved Successfully!"));
         }
 
-        function changeHeroImg() { if(document.body.classList.contains('admin-mode')) { const u = prompt("Img URL:"); if(u) { siteData.heroImg = u; applyDataToScreen(); } } }
-        function changeItemImg(i) { if(document.body.classList.contains('admin-mode')) { const u = prompt("Img URL:"); if(u) { siteData.menu[i].img = u; renderMenu(); } } }
-        function addNewDish() { siteData.menu.unshift({name:"New Dish", price:"&#8377;150", img:"https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400"}); renderMenu(); }
-        function addToCart(i) { cart.push(siteData.menu[i]); updateCart(); toggleCart(); }
-        function toggleCart() { document.getElementById('cart-sidebar').classList.toggle('open'); }
-        function setPayment(method) { paymentMethod = method; document.getElementById('pay-online').classList.toggle('active', method === 'Online'); document.getElementById('pay-cod').classList.toggle('active', method === 'COD'); document.getElementById('qr-section').style.display = (method === 'Online') ? 'flex' : 'none'; }
-
-        function updateCart() {
-            const list = document.getElementById('cart-items'); let itemsTotal = 0; list.innerHTML = '';
-            cart.forEach((item, i) => {
-                itemsTotal += parseInt(item.price.replace(/[^0-9]/g, '')) || 0;
-                list.innerHTML += `<div class="flex justify-between items-center bg-slate-50 p-4 rounded-2xl border border-slate-100"><span class="font-bold text-xs uppercase text-black">${item.name}</span><button onclick="cart.splice(${i},1);updateCart()" class="text-red-400 font-black px-2">×</button></div>`;
-            });
-            let deliveryCharge = 0; let noteText = "";
-            if (cart.length > 0) { if (cart.length < 5) { deliveryCharge = 100; noteText = `(add ${5 - cart.length} more for free)`; } else { deliveryCharge = 0; noteText = "(free applied!)"; } }
-            document.getElementById('delivery-note').innerText = noteText;
-            document.getElementById('delivery-cost-text').innerHTML = (cart.length >= 5) ? `FREE` : `&#8377;${deliveryCharge}`;
-            document.getElementById('subtotal').innerText = itemsTotal;
-            document.getElementById('cart-total').innerText = itemsTotal + deliveryCharge;
-            document.getElementById('cart-count').innerText = cart.length;
-        }
-
         function sendOrder() {
-            const addressField = document.getElementById('cust-addr');
             const name = document.getElementById('cust-name').value;
-            if(!name || !addressField.value || !cart.length) return alert("Please fill your name, address, and add items!");
-            
-            let msg = `*?? ORDER - ${siteData.title}*%0A*Name:* ${name}%0A*Address:* ${addressField.value}%0A*Payment:* ${paymentMethod}%0A%0A*Items:*%0A`;
-            cart.forEach(item => msg += ` ${item.name} (${item.price.replace('&#8377;', 'Rs. ')})%0A`);
-            msg += `%0A*TOTAL: Rs. ${document.getElementById('cart-total').innerText}*`;
+            const addr = document.getElementById('cust-addr').value;
+            if(!name || !addr || !cart.length) return alert("Fill all details!");
+            let msg = `*NEW ORDER*%0A*Name:* ${name}%0A*Address:* ${addr}%0A%0A*Items:*%0A`;
+            cart.forEach(item => msg += `• ${item.name} (${item.quantity} x ${item.price})%0A`);
+            msg += `%0A*Total: Rs. ${document.getElementById('cart-total').innerText}*`;
             window.open(`https://wa.me/${siteData.wa}?text=${msg}`, '_blank');
         }
+
+        function changeHeroImg() { const u = prompt("Img URL:"); if(u) { siteData.heroImg = u; applyDataToScreen(); } }
+        function changeItemImg(i) { const u = prompt("Img URL:"); if(u) { siteData.menu[i].img = u; renderMenu(); } }
     </script>
 </body>
 </html>
