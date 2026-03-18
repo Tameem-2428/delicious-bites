@@ -18,7 +18,7 @@
         body.admin-mode .admin-only { display: flex !important; }
         body.admin-mode [contenteditable="true"] { outline: 2px dashed #ea580c; outline-offset: 4px; background: rgba(234, 88, 12, 0.05); }
         
-        /* Responsive height for menu images on mobile */
+        /* Ensures image containers scale properly on mobile */
         .menu-card-img-container { position: relative; overflow: hidden; border-radius: 1.8rem; height: 12rem; background: #f1f5f9; }
         @media (min-width: 768px) { .menu-card-img-container { height: 14rem; } }
 
@@ -31,8 +31,8 @@
         
         .cat-tab.active { background: #ea580c; color: white; border-color: #ea580c; }
 
-        header { position: relative; overflow: hidden; }
-        .slide { position: absolute; inset: 0; background-size: cover; background-position: center; opacity: 0; transition: opacity 1.5s ease-in-out; }
+        header { position: relative; overflow: hidden; width: 100%; }
+        .slide { position: absolute; inset: 0; background-size: cover; background-position: center; opacity: 0; transition: opacity 1.5s ease-in-out; width: 100%; }
         .slide.active { opacity: 1; }
         .hero-overlay { background: linear-gradient(to right, rgba(0,0,0,0.8) 30%, transparent 100%); }
 
@@ -42,7 +42,7 @@
         }
         #mobile-cart-bar.visible { transform: translateY(0); }
 
-        /* Hide scrollbars for category tabs on mobile */
+        /* Smooth horizontal scrolling for categories on mobile */
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
@@ -70,7 +70,7 @@
 
     <nav class="fixed top-0 w-full z-40 bg-white/80 backdrop-blur-md px-4 md:px-6 py-4 flex justify-between items-center border-b border-slate-100">
         <div class="flex items-center gap-2">
-            <div id="admin-trigger" ondblclick="checkAdminPin()" class="w-10 h-10 bg-orange-600 rounded-xl flex items-center justify-center text-white cursor-pointer active:scale-90 transition-transform">
+            <div id="admin-trigger" ondblclick="checkAdminPin()" class="w-10 h-10 bg-orange-600 rounded-xl flex items-center justify-center text-white cursor-pointer active:scale-95">
                 <i class="fas fa-utensils"></i>
             </div>
             <h1 id="site-title" class="edit-text text-lg md:text-xl font-black italic truncate max-w-[150px] md:max-w-none">DELICIOUS BITES</h1>
@@ -83,10 +83,10 @@
     <header id="hero-slider" class="min-h-screen flex items-center pt-16">
         <div id="slides-container" class="absolute inset-0"></div>
         <div class="hero-overlay absolute inset-0 z-10"></div>
-        <div class="relative z-20 p-6 md:p-24 text-white">
+        <div class="relative z-20 p-6 md:p-12 lg:p-24 text-white">
             <h2 id="hero-title" class="edit-text text-5xl md:text-8xl hero-title mb-6 leading-tight">Tasty <br> Memories.</h2>
-            <p id="hero-desc" class="edit-text text-slate-300 font-medium mb-10 md:mb-12 max-w-sm text-sm md:text-base">Handcrafted snacks. Delivered to your door.</p>
-            <div><a href="#menu" class="bg-orange-600 text-white px-8 md:px-10 py-4 rounded-2xl font-black inline-block shadow-xl text-sm md:text-base uppercase tracking-wider active:scale-95 transition-transform">Start Ordering</a></div>
+            <p id="hero-desc" class="edit-text text-slate-300 font-medium mb-10 max-w-sm text-sm md:text-base">Handcrafted snacks. Delivered to your door.</p>
+            <div><a href="#menu" class="bg-orange-600 text-white px-8 md:px-10 py-4 rounded-2xl font-black inline-block shadow-xl text-sm md:text-base uppercase active:scale-95 transition-transform">Start Ordering</a></div>
         </div>
     </header>
 
@@ -143,7 +143,7 @@
                     &#8377;<span id="cart-total" class="edit-text">0</span>
                 </span>
             </div>
-            <button onclick="sendOrder()" class="w-full bg-green-600 text-white py-5 rounded-2xl font-black text-base md:text-lg shadow-lg active:scale-95 transition-transform uppercase tracking-wider">Place Order Via WhatsApp</button>
+            <button onclick="sendOrder()" class="w-full bg-green-600 text-white py-5 rounded-2xl font-black text-base md:text-lg shadow-lg active:scale-95 transition-transform uppercase tracking-wider">PLACE ORDER VIA WHATSAPP</button>
         </div>
     </div>
 
@@ -265,7 +265,7 @@
                             <img src="${item.img}" class="w-full h-full object-cover">
                             <div onclick="changeItemImg(${i})" class="admin-image-overlay">Replace Photo</div>
                         </div>
-                        <div class="mt-4 md:mt-5 px-2">
+                        <div class="mt-5 px-2">
                              <p class="text-[9px] font-black uppercase tracking-widest ${catColor} mb-1">${catLabel}</p>
                              <h4 contenteditable="${isAdmin}" onblur="siteData.menu[${i}].name=this.innerText" class="text-lg font-black leading-tight">${item.name}</h4>
                         </div>
@@ -307,8 +307,8 @@
             cart.forEach((item, i) => {
                 const priceNum = parseInt(item.price.replace(/[^0-9]/g, '')) || 0;
                 total += (priceNum * item.quantity); totalItems += item.quantity;
-                list.innerHTML += `<div class="flex justify-between items-center bg-slate-50 p-4 rounded-2xl mx-1 md:mx-4">
-                    <div class="pr-2"><p class="font-bold text-xs uppercase leading-tight">${item.name}</p><p class="text-[10px] text-slate-400 font-bold mt-1">${item.quantity} x &#8377;${item.price.replace('?', '').replace('?', '')}</p></div>
+                list.innerHTML += `<div class="flex justify-between items-center bg-slate-50 p-4 rounded-2xl">
+                    <div class="pr-2"><p class="font-bold text-xs uppercase">${item.name}</p><p class="text-[10px] text-slate-400 font-bold">${item.quantity} x &#8377;${item.price.replace('?', '').replace('?', '')}</p></div>
                     <button onclick="removeCompletely(${i})" class="text-red-400 font-black px-2 text-xl">&times;</button>
                 </div>`;
             });
@@ -336,14 +336,14 @@
             siteData.heroDesc = document.getElementById('hero-desc').innerText;
             siteData.wa = document.getElementById('wa-input').value;
             siteData.qr = document.getElementById('qr-input').value;
-            db.ref('siteData').set(siteData).then(() => alert("Saved Successfully!"));
+            db.ref('siteData').set(siteData).then(() => alert("Saved!"));
         }
 
         function sendOrder() {
             const name = document.getElementById('cust-name').value;
             const addr = document.getElementById('cust-addr').value;
             const grandTotal = document.getElementById('cart-total').innerText;
-            if(!name || !addr || !cart.length) return alert("Please fill in your details!");
+            if(!name || !addr || !cart.length) return alert("Fill details!");
             let msg = `*NEW ORDER*%0A*Name:* ${name}%0A*Address:* ${addr}%0A*Payment:* ${paymentMethod}%0A%0A*Items:*%0A`;
             cart.forEach(item => msg += `• ${item.name} (${item.quantity} x Rs.${item.price.replace('?', '').replace('?', '')})%0A`);
             msg += `%0A*Total: Rs. ${grandTotal}*`;
