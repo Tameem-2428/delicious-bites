@@ -18,20 +18,16 @@
         body.admin-mode .admin-only { display: flex !important; }
         body.admin-mode [contenteditable="true"] { outline: 2px dashed #ea580c; outline-offset: 4px; background: rgba(234, 88, 12, 0.05); }
         
-        /* Ensures image containers scale properly on mobile */
-        .menu-card-img-container { position: relative; overflow: hidden; border-radius: 1.8rem; height: 12rem; background: #f1f5f9; }
-        @media (min-width: 768px) { .menu-card-img-container { height: 14rem; } }
-
+        .menu-card-img-container { position: relative; overflow: hidden; border-radius: 1.8rem; height: 14rem; background: #f1f5f9; }
         .admin-image-overlay { display: none; position: absolute; inset: 0; background: rgba(0,0,0,0.4); align-items: center; justify-content: center; color: white; font-weight: 900; font-size: 10px; text-transform: uppercase; cursor: pointer; z-index: 10; }
         body.admin-mode .admin-image-overlay { display: flex; }
         
-        #cart-sidebar { transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1); transform: translateX(100%); z-index: 100; width: 100%; }
-        @media (min-width: 768px) { #cart-sidebar { max-width: 28rem; } }
+        #cart-sidebar { transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1); transform: translateX(100%); z-index: 100; }
         #cart-sidebar.open { transform: translateX(0); }
         
         .cat-tab.active { background: #ea580c; color: white; border-color: #ea580c; }
 
-        /* Fixes hero image overflow for mobile screens */
+        /* Updated for Mobile Responsiveness */
         header { position: relative; overflow: hidden; width: 100%; }
         .slide { position: absolute; inset: 0; background-size: cover; background-position: center; opacity: 0; transition: opacity 1.5s ease-in-out; width: 100%; }
         .slide.active { opacity: 1; }
@@ -42,18 +38,20 @@
             transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
         #mobile-cart-bar.visible { transform: translateY(0); }
-
-        /* Smooth horizontal scrolling for categories on mobile */
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        /* Ensures smooth scaling for titles on small screens */
+        @media (max-width: 640px) {
+            #hero-title { font-size: 3rem !important; }
+            #site-title { font-size: 1.1rem !important; }
+        }
     </style>
 </head>
 <body class="text-slate-900 overflow-x-hidden">
 
-    <div class="admin-only fixed top-0 left-0 w-full bg-orange-600 text-white z-[110] p-3 shadow-xl text-center overflow-x-auto">
-        <div class="flex items-center justify-center gap-4 text-xs font-bold uppercase whitespace-nowrap px-4">
-            WA (91): <input type="text" id="wa-input" class="bg-orange-700 px-2 py-1 rounded outline-none w-24">
-            QR URL: <input type="text" id="qr-input" class="bg-orange-700 px-2 py-1 rounded outline-none w-24 text-black">
+    <div class="admin-only fixed top-0 left-0 w-full bg-orange-600 text-white z-[110] p-3 shadow-xl text-center">
+        <div class="max-w-7xl mx-auto flex flex-wrap justify-center items-center gap-4 text-xs font-bold uppercase">
+            WA (91): <input type="text" id="wa-input" class="bg-orange-700 px-2 py-1 rounded outline-none w-28">
+            QR URL: <input type="text" id="qr-input" class="bg-orange-700 px-2 py-1 rounded outline-none w-28 text-black">
             <div class="flex items-center gap-2 bg-orange-700 px-3 py-1 rounded">
                 CAT: 
                 <select id="new-item-cat" class="bg-transparent outline-none font-black cursor-pointer">
@@ -69,12 +67,12 @@
         </div>
     </div>
 
-    <nav class="fixed top-0 w-full z-40 bg-white/80 backdrop-blur-md px-4 md:px-6 py-4 flex justify-between items-center border-b border-slate-100">
+    <nav class="fixed top-0 w-full z-40 bg-white/80 backdrop-blur-md px-6 py-4 flex justify-between items-center border-b border-slate-100">
         <div class="flex items-center gap-2">
-            <div id="admin-trigger" ondblclick="checkAdminPin()" class="w-10 h-10 bg-orange-600 rounded-xl flex items-center justify-center text-white cursor-pointer active:scale-95">
+            <div id="admin-trigger" ondblclick="checkAdminPin()" class="w-10 h-10 bg-orange-600 rounded-xl flex items-center justify-center text-white cursor-pointer">
                 <i class="fas fa-utensils"></i>
             </div>
-            <h1 id="site-title" class="edit-text text-lg md:text-xl font-black italic truncate max-w-[150px] md:max-w-none">DELICIOUS BITES</h1>
+            <h1 id="site-title" class="edit-text text-xl font-black italic">DELICIOUS BITES</h1>
         </div>
         <button onclick="toggleCart()" class="hidden md:flex bg-black text-white px-6 py-2.5 rounded-full font-bold text-sm items-center gap-2">
             <i class="fas fa-shopping-bag"></i> <span id="nav-cart-count">0</span>
@@ -84,29 +82,29 @@
     <header id="hero-slider" class="min-h-screen flex items-center pt-16">
         <div id="slides-container" class="absolute inset-0"></div>
         <div class="hero-overlay absolute inset-0 z-10"></div>
-        <div class="relative z-20 p-6 md:p-12 lg:p-24 text-white">
+        <div class="relative z-20 p-8 lg:p-24 text-white">
             <h2 id="hero-title" class="edit-text text-5xl md:text-8xl hero-title mb-6 leading-tight">Tasty <br> Memories.</h2>
-            <p id="hero-desc" class="edit-text text-slate-300 font-medium mb-10 max-w-sm text-sm md:text-base">Handcrafted snacks. Delivered to your door.</p>
-            <div><a href="#menu" class="bg-orange-600 text-white px-8 md:px-10 py-4 rounded-2xl font-black inline-block shadow-xl text-sm md:text-base uppercase active:scale-95 transition-transform">Start Ordering</a></div>
+            <p id="hero-desc" class="edit-text text-slate-300 font-medium mb-12 max-w-sm">Handcrafted snacks. Delivered to your door.</p>
+            <div><a href="#menu" class="bg-orange-600 text-white px-10 py-4 rounded-2xl font-black inline-block shadow-xl">Start Ordering</a></div>
         </div>
     </header>
 
-    <section id="menu" class="max-w-7xl mx-auto px-4 md:px-6 py-16 md:py-24 pb-40">
-        <div class="flex flex-col md:flex-row justify-between items-center gap-6 mb-12 md:mb-16">
+    <section id="menu" class="max-w-7xl mx-auto px-6 py-24 pb-40">
+        <div class="flex flex-col md:flex-row justify-between items-center gap-6 mb-16">
             <h3 class="text-4xl md:text-5xl font-black italic">Menu</h3>
-            <div class="flex bg-slate-100 p-1 rounded-2xl gap-1 overflow-x-auto no-scrollbar max-w-full">
-                <button onclick="filterCat('all')" id="cat-all" class="cat-tab active px-5 py-2.5 rounded-xl font-bold text-[10px] uppercase whitespace-nowrap transition-all">All</button>
-                <button onclick="filterCat('veg')" id="cat-veg" class="cat-tab px-5 py-2.5 rounded-xl font-bold text-[10px] uppercase whitespace-nowrap transition-all">Veg</button>
-                <button onclick="filterCat('nonveg')" id="cat-nonveg" class="cat-tab px-5 py-2.5 rounded-xl font-bold text-[10px] uppercase whitespace-nowrap transition-all">Non-Veg</button>
-                <button onclick="filterCat('dessert')" id="cat-dessert" class="cat-tab px-5 py-2.5 rounded-xl font-bold text-[10px] uppercase whitespace-nowrap transition-all">Desserts</button>
+            <div class="flex bg-slate-100 p-1.5 rounded-2xl gap-1 overflow-x-auto max-w-full">
+                <button onclick="filterCat('all')" id="cat-all" class="cat-tab active px-5 py-2 rounded-xl font-bold text-[10px] uppercase whitespace-nowrap">All</button>
+                <button onclick="filterCat('veg')" id="cat-veg" class="cat-tab px-5 py-2 rounded-xl font-bold text-[10px] uppercase whitespace-nowrap">Veg</button>
+                <button onclick="filterCat('nonveg')" id="cat-nonveg" class="cat-tab px-5 py-2 rounded-xl font-bold text-[10px] uppercase whitespace-nowrap">Non-Veg</button>
+                <button onclick="filterCat('dessert')" id="cat-dessert" class="cat-tab px-5 py-2 rounded-xl font-bold text-[10px] uppercase whitespace-nowrap">Desserts</button>
             </div>
-            <button onclick="addNewDish()" class="admin-only bg-green-600 text-white px-6 py-2 rounded-xl font-bold shadow-lg text-xs">+ Add Item</button>
+            <button onclick="addNewDish()" class="admin-only bg-green-600 text-white px-6 py-2 rounded-xl font-bold shadow-lg">+ Add Item</button>
         </div>
-        <div id="menu-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-12"></div>
+        <div id="menu-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"></div>
     </section>
 
     <div id="mobile-cart-bar" class="fixed bottom-6 left-6 right-6 z-50 md:bottom-8 md:left-auto md:right-8 md:w-80">
-        <button onclick="toggleCart()" class="w-full bg-orange-600 text-white p-4 rounded-2xl shadow-2xl flex justify-between items-center active:bg-orange-700 transition-colors">
+        <button onclick="toggleCart()" class="w-full bg-orange-600 text-white p-4 rounded-2xl shadow-2xl flex justify-between items-center hover:bg-orange-700 transition-colors">
             <div class="flex items-center gap-3">
                 <span id="mobile-cart-count" class="bg-white/20 w-8 h-8 flex items-center justify-center rounded-lg font-black text-sm">0</span>
                 <span class="font-bold text-sm tracking-tight">View your cart</span>
@@ -115,7 +113,7 @@
         </button>
     </div>
 
-    <div id="cart-sidebar" class="fixed top-0 right-0 h-full bg-white shadow-2xl flex flex-col">
+    <div id="cart-sidebar" class="fixed top-0 right-0 h-full w-full max-w-md bg-white shadow-2xl flex flex-col">
         <div class="p-6 border-b flex justify-between items-center bg-white sticky top-0 z-10">
             <h4 class="text-2xl font-black italic">Your Order</h4>
             <button onclick="toggleCart()" class="text-slate-300 text-4xl leading-none">&times;</button>
@@ -144,7 +142,7 @@
                     &#8377;<span id="cart-total" class="edit-text">0</span>
                 </span>
             </div>
-            <button onclick="sendOrder()" class="w-full bg-green-600 text-white py-5 rounded-2xl font-black text-base md:text-lg shadow-lg active:scale-95 transition-transform uppercase tracking-wider">PLACE ORDER VIA WHATSAPP</button>
+            <button onclick="sendOrder()" class="w-full bg-green-600 text-white py-5 rounded-2xl font-black text-lg shadow-lg active:scale-95 transition-transform">PLACE ORDER VIA WHATSAPP</button>
         </div>
     </div>
 
@@ -327,7 +325,7 @@
         function toggleCart() { document.getElementById('cart-sidebar').classList.toggle('open'); }
         function addNewDish() { 
             const cat = document.getElementById('new-item-cat').value;
-            siteData.menu.unshift({ name: "New Dish", price: "150", img: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400\", category: cat }); 
+            siteData.menu.unshift({ name: "New Dish", price: "150", img: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400", category: cat }); 
             renderMenu(); 
         }
 
