@@ -31,6 +31,7 @@
         
         .cat-tab.active { background: #ea580c; color: white; border-color: #ea580c; }
 
+        /* Fixes hero image overflow for mobile screens */
         header { position: relative; overflow: hidden; width: 100%; }
         .slide { position: absolute; inset: 0; background-size: cover; background-position: center; opacity: 0; transition: opacity 1.5s ease-in-out; width: 100%; }
         .slide.active { opacity: 1; }
@@ -326,7 +327,7 @@
         function toggleCart() { document.getElementById('cart-sidebar').classList.toggle('open'); }
         function addNewDish() { 
             const cat = document.getElementById('new-item-cat').value;
-            siteData.menu.unshift({ name: "New Dish", price: "150", img: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400", category: cat }); 
+            siteData.menu.unshift({ name: "New Dish", price: "150", img: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400\", category: cat }); 
             renderMenu(); 
         }
 
