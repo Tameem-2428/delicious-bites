@@ -77,7 +77,7 @@
         <div class="hero-overlay absolute inset-0 z-10"></div>
         <div class="relative z-20 p-8 lg:p-24 text-white">
             <h2 id="hero-title" class="edit-text text-5xl md:text-8xl hero-title mb-6 leading-tight">Tasty <br> Memories.</h2>
-            <p id="hero-desc" class="edit-text text-slate-300 font-medium mb-12 max-w-sm">Handcrafted snacks. Delivered to your door.</p>
+            <p id="hero-desc" class="edit-text text-slate-300 font-medium mb-12 max-w-sm">Handcrafted snacks. Delivered to your door. <strong>Pre-booked orders only (Order 1 day before).</strong></p>
             <div><a href="#menu" class="bg-orange-600 text-white px-10 py-4 rounded-2xl font-black inline-block shadow-xl">Start Ordering</a></div>
         </div>
     </header>
@@ -117,6 +117,17 @@
                 <input type="text" id="cust-name" placeholder="Full Name" class="w-full p-4 rounded-xl bg-slate-100 font-bold text-sm outline-none border-2 border-transparent focus:border-orange-500">
                 <textarea id="cust-addr" placeholder="Full Delivery Address" class="w-full p-4 rounded-xl bg-slate-100 font-bold text-sm h-24 outline-none border-2 border-transparent focus:border-orange-500"></textarea>
                 
+                <div class="bg-slate-100 p-4 rounded-xl">
+                    <p class="text-[10px] font-black uppercase text-slate-400 mb-2 italic">Select Delivery Day</p>
+                    <input type="date" id="delivery-date" class="w-full bg-transparent font-bold text-sm outline-none" onchange="validateDeliveryDate(this)">
+                </div>
+
+                <div id="date-error-bar" class="hidden bg-red-100 border-l-4 border-red-500 p-3 rounded-lg">
+                    <p class="text-[11px] font-bold text-red-700 uppercase leading-tight">
+                        <i class="fas fa-exclamation-circle mr-1"></i> Only pre-booked orders accepted (Order at least 1 day before).
+                    </p>
+                </div>
+
                 <div class="flex gap-2 p-1 bg-slate-100 rounded-xl">
                     <button id="pay-cod" onclick="setPayment('COD')" class="flex-1 py-3 rounded-lg font-black text-[10px] uppercase bg-white shadow-sm text-orange-600">COD</button>
                     <button id="pay-online" onclick="setPayment('PREPAID')" class="flex-1 py-3 rounded-lg font-black text-[10px] uppercase text-slate-400">Prepaid</button>
@@ -155,6 +166,27 @@
         let slideIndex = 0;
         let paymentMethod = 'COD';
 
+        // Pre-fill with tomorrow's date
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        const tomorrowStr = tomorrow.toISOString().split('T')[0];
+        document.getElementById('delivery-date').value = tomorrowStr;
+
+        function validateDeliveryDate(input) {
+            const selectedDate = new Date(input.value);
+            selectedDate.setHours(0,0,0,0);
+            const today = new Date();
+            today.setHours(0,0,0,0);
+            const errorBar = document.getElementById('date-error-bar');
+
+            // Only show error if date is today or earlier
+            if (selectedDate <= today) {
+                errorBar.classList.remove('hidden');
+            } else {
+                errorBar.classList.add('hidden');
+            }
+        }
+
         db.ref('siteData').on('value', (snap) => {
             if (snap.exists()) { 
                 siteData = snap.val(); 
@@ -167,7 +199,7 @@
         function applyDataToScreen() {
             document.getElementById('site-title').innerText = siteData.title;
             document.getElementById('hero-title').innerText = siteData.heroTitle;
-            document.getElementById('hero-desc').innerText = siteData.heroDesc;
+            document.getElementById('hero-desc').innerHTML = siteData.heroDesc;
             document.getElementById('wa-input').value = siteData.wa;
             document.getElementById('qr-input').value = siteData.qr;
             document.getElementById('payment-qr').src = siteData.qr;
@@ -262,7 +294,7 @@
                              <h4 contenteditable="${isAdmin}" onblur="siteData.menu[${i}].name=this.innerText" class="text-lg font-black leading-tight">${item.name}</h4>
                         </div>
                         <div class="flex justify-between items-center mt-4 px-2">
-                            <span class="text-xl font-black text-orange-600">&#8377;<span contenteditable="${isAdmin}" onblur="siteData.menu[${i}].price=this.innerText">${item.price.replace('?', '').replace('?', '')}</span></span>
+                            <span class="text-xl font-black text-orange-600">&#8377;<span contenteditable="${isAdmin}" onblur="siteData.menu[${i}].price=this.innerText">${item.price.toString().replace('?', '').replace('?', '')}</span></span>
                             <div class="relative w-24 h-9">
                                 <button onclick="handleInitialAdd(${i})" class="${quantity > 0 ? 'hidden' : 'flex'} absolute inset-0 bg-white border border-slate-200 text-orange-600 font-bold rounded-lg items-center justify-center shadow-sm text-[10px] uppercase">Add</button>
                                 <div class="${quantity > 0 ? 'flex' : 'hidden'} absolute inset-0 bg-orange-600 text-white rounded-lg items-center justify-between px-2 shadow-lg">
@@ -272,7 +304,7 @@
                                 </div>
                             </div>
                         </div>
-                        <button onclick="siteData.menu.splice(${i},1);renderMenu()" class="admin-only absolute -top-2 -right-2 bg-red-500 text-white w-8 h-8 rounded-full flex items-center justify-center font-bold">�</button>
+                        <button onclick="siteData.menu.splice(${i},1);renderMenu()" class="admin-only absolute -top-2 -right-2 bg-red-500 text-white w-8 h-8 rounded-full flex items-center justify-center font-bold">×</button>
                     </div>`;
             });
         }
@@ -297,10 +329,10 @@
             let total = 0, totalItems = 0; list.innerHTML = '';
             
             cart.forEach((item, i) => {
-                const priceNum = parseInt(item.price.replace(/[^0-9]/g, '')) || 0;
+                const priceNum = parseInt(item.price.toString().replace(/[^0-9]/g, '')) || 0;
                 total += (priceNum * item.quantity); totalItems += item.quantity;
                 list.innerHTML += `<div class="flex justify-between items-center bg-slate-50 p-4 rounded-2xl">
-                    <div class="pr-2"><p class="font-bold text-xs uppercase">${item.name}</p><p class="text-[10px] text-slate-400 font-bold">${item.quantity} x &#8377;${item.price.replace('?', '').replace('?', '')}</p></div>
+                    <div class="pr-2"><p class="font-bold text-xs uppercase">${item.name}</p><p class="text-[10px] text-slate-400 font-bold">${item.quantity} x &#8377;${item.price.toString().replace('?', '').replace('?', '')}</p></div>
                     <button onclick="removeCompletely(${i})" class="text-red-400 font-black px-2 text-xl">&times;</button>
                 </div>`;
             });
@@ -325,7 +357,7 @@
         function publishToCloud() {
             siteData.title = document.getElementById('site-title').innerText;
             siteData.heroTitle = document.getElementById('hero-title').innerText;
-            siteData.heroDesc = document.getElementById('hero-desc').innerText;
+            siteData.heroDesc = document.getElementById('hero-desc').innerHTML;
             siteData.wa = document.getElementById('wa-input').value;
             siteData.qr = document.getElementById('qr-input').value;
             db.ref('siteData').set(siteData).then(() => alert("Saved!"));
@@ -334,10 +366,23 @@
         function sendOrder() {
             const name = document.getElementById('cust-name').value;
             const addr = document.getElementById('cust-addr').value;
+            const delDate = document.getElementById('delivery-date').value;
             const grandTotal = document.getElementById('cart-total').innerText;
-            if(!name || !addr || !cart.length) return alert("Fill details!");
-            let msg = `*NEW ORDER*%0A*Name:* ${name}%0A*Address:* ${addr}%0A*Payment:* ${paymentMethod}%0A%0A*Items:*%0A`;
-            cart.forEach(item => msg += `� ${item.name} (${item.quantity} x Rs.${item.price.replace('?', '').replace('?', '')})%0A`);
+            
+            const selectedDate = new Date(delDate);
+            selectedDate.setHours(0,0,0,0);
+            const today = new Date();
+            today.setHours(0,0,0,0);
+
+            if (selectedDate <= today) {
+                document.getElementById('date-error-bar').classList.remove('hidden');
+                return alert("Only pre-booked orders accepted (Order at least 1 day before).");
+            }
+
+            if(!name || !addr || !delDate || !cart.length) return alert("Fill details!");
+            
+            let msg = `*NEW ORDER*%0A*Name:* ${name}%0A*Address:* ${addr}%0A*Delivery Date:* ${delDate}%0A*Payment:* ${paymentMethod}%0A%0A*Items:*%0A`;
+            cart.forEach(item => msg += `• ${item.name} (${item.quantity} x Rs.${item.price.toString().replace('?', '').replace('?', '')})%0A`);
             msg += `%0A*Total: Rs. ${grandTotal}*`;
             window.open(`https://wa.me/${siteData.wa}?text=${msg}`, '_blank');
         }
