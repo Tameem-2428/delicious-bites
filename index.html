@@ -3,44 +3,370 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>DELICIOUS BITES | Live Store</title>
+    <title>BITE BURST | Live Store</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
-
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@1,800&family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap');
-        body { font-family: 'Plus Jakarta Sans', sans-serif; background: #fafafa; scroll-behavior: smooth; -webkit-tap-highlight-color: transparent; }
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@1,800&family=Nunito:wght@400;600;700;800;900&display=swap');
+        body { font-family: 'Nunito', sans-serif; background: #0d0d0d; scroll-behavior: smooth; -webkit-tap-highlight-color: transparent; color: #e8e4dd; }
         .hero-title { font-family: 'Playfair Display', serif; font-style: italic; font-weight: 800; }
         
         .admin-only { display: none !important; }
         body.admin-mode .admin-only { display: flex !important; }
-        body.admin-mode [contenteditable="true"] { outline: 2px dashed #ea580c; outline-offset: 4px; background: rgba(234, 88, 12, 0.05); }
+        body.admin-mode [contenteditable="true"] { outline: 2px dashed #d4a853; outline-offset: 4px; background: rgba(212, 168, 83, 0.08); }
         
-        .menu-card-img-container { position: relative; overflow: hidden; border-radius: 1.8rem; height: 14rem; background: #f1f5f9; }
+        .menu-card-img-container { position: relative; overflow: hidden; border-radius: 1.5rem; height: 14rem; background: #1a1a1a; }
         .admin-image-overlay { display: none; position: absolute; inset: 0; background: rgba(0,0,0,0.4); align-items: center; justify-content: center; color: white; font-weight: 900; font-size: 10px; text-transform: uppercase; cursor: pointer; z-index: 10; }
         body.admin-mode .admin-image-overlay { display: flex; }
         
         #cart-sidebar { transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1); transform: translateX(100%); z-index: 100; }
         #cart-sidebar.open { transform: translateX(0); }
         
-        .cat-tab.active { background: #ea580c; color: white; border-color: #ea580c; }
-
+        .cat-tab.active { background: linear-gradient(135deg, #d4a853, #c49638); color: #0d0d0d; border-color: #d4a853; }
         header { position: relative; overflow: hidden; }
         .slide { position: absolute; inset: 0; background-size: cover; background-position: center; opacity: 0; transition: opacity 1.5s ease-in-out; }
         .slide.active { opacity: 1; }
-        .hero-overlay { background: linear-gradient(to right, rgba(0,0,0,0.8) 30%, transparent 100%); }
-
+        .hero-overlay { background: linear-gradient(to right, rgba(0,0,0,0.92) 25%, rgba(0,0,0,0.4) 60%, transparent 100%); }
         #mobile-cart-bar {
             transform: translateY(150%);
             transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
         #mobile-cart-bar.visible { transform: translateY(0); }
+        /* ========== CINEMATIC FULL-SCREEN LOADER ========== */
+        #page-loader {
+            position: fixed; inset: 0; z-index: 9999;
+            background: #0d0d0d;
+            display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 24px;
+            transition: opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.8s;
+            overflow: hidden;
+        }
+        #page-loader.hide { opacity: 0; visibility: hidden; pointer-events: none; }
+        
+        /* Particle canvas behind loader */
+        #loader-particles {
+            position: absolute; inset: 0; z-index: 0;
+        }
+        
+        .loader-brand {
+            font-family: 'Playfair Display', serif;
+            font-style: italic; font-weight: 800;
+            font-size: 36px; 
+            letter-spacing: 6px;
+            position: relative; z-index: 1;
+            background: linear-gradient(135deg, #d4a853 0%, #f5e6c8 40%, #d4a853 60%, #f5e6c8 100%);
+            background-size: 300% 100%;
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: shimmerText 2s ease-in-out infinite;
+        }
+        @keyframes shimmerText {
+            0% { background-position: 100% 0; }
+            100% { background-position: -100% 0; }
+        }
+        
+        .loader-tagline {
+            font-size: 11px; font-weight: 700; text-transform: uppercase;
+            letter-spacing: 8px; color: #555; position: relative; z-index: 1;
+            animation: fadeInUp 1s 0.5s both;
+        }
+        
+        .loader-progress {
+            width: 200px; height: 2px; background: #1a1a1a;
+            border-radius: 2px; overflow: hidden; position: relative; z-index: 1;
+        }
+        .loader-progress-bar {
+            height: 100%; width: 0%;
+            background: linear-gradient(90deg, #d4a853, #f5e6c8);
+            animation: loadProgress 2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+        @keyframes loadProgress {
+            0% { width: 0%; }
+            50% { width: 60%; }
+            80% { width: 85%; }
+            100% { width: 100%; }
+        }
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        /* ========== ENHANCED CUSTOM CURSOR ========== */
+        .cursor-dot, .cursor-ring {
+            pointer-events: none; position: fixed; z-index: 99998;
+            border-radius: 50%; transform: translate(-50%, -50%);
+            mix-blend-mode: difference;
+        }
+        .cursor-dot {
+            width: 8px; height: 8px; 
+            background: #d4a853;
+            transition: transform 0.15s cubic-bezier(0.22, 1, 0.36, 1);
+            box-shadow: 0 0 10px rgba(212, 168, 83, 0.5);
+        }
+        .cursor-ring {
+            width: 40px; height: 40px;
+            border: 2px solid rgba(212, 168, 83, 0.4);
+            transition: width 0.4s cubic-bezier(0.22, 1, 0.36, 1), 
+                        height 0.4s cubic-bezier(0.22, 1, 0.36, 1), 
+                        border-color 0.3s ease,
+                        background 0.3s ease;
+        }
+        .cursor-ring.hover {
+            width: 64px; height: 64px;
+            border-color: #d4a853;
+            background: rgba(212, 168, 83, 0.06);
+        }
+        /* Cursor trail */
+        .cursor-trail {
+            pointer-events: none; position: fixed; z-index: 99997;
+            width: 4px; height: 4px; border-radius: 50%;
+            background: rgba(212, 168, 83, 0.3);
+            transform: translate(-50%, -50%);
+            transition: opacity 0.5s ease;
+        }
+        @media (pointer: coarse) { .cursor-dot, .cursor-ring, .cursor-trail { display: none !important; } }
+        /* ========== ENHANCED SCROLL REVEAL ========== */
+        .reveal {
+            opacity: 0; transform: translateY(60px);
+            filter: blur(8px);
+            transition: opacity 0.9s cubic-bezier(0.22, 1, 0.36, 1),
+                        transform 0.9s cubic-bezier(0.22, 1, 0.36, 1),
+                        filter 0.9s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+        .reveal.visible { opacity: 1; transform: translateY(0); filter: blur(0); }
+        
+        .reveal-scale {
+            opacity: 0; transform: scale(0.8) translateY(30px);
+            filter: blur(6px);
+            transition: opacity 0.7s ease, transform 0.7s cubic-bezier(0.22, 1, 0.36, 1), filter 0.7s ease;
+        }
+        .reveal-scale.visible { opacity: 1; transform: scale(1) translateY(0); filter: blur(0); }
+        /* ========== ENHANCED 3D CARD TILT ========== */
+        .tilt-card {
+            transform-style: preserve-3d;
+            transition: transform 0.25s ease-out, box-shadow 0.4s ease;
+        }
+        .tilt-card:hover {
+            box-shadow: 0 30px 80px -15px rgba(212, 168, 83, 0.25),
+                        0 15px 30px -10px rgba(0,0,0,0.5);
+        }
+        /* ========== ENHANCED IMAGE HOVER ========== */
+        .menu-card-img-container img {
+            transition: transform 0.7s cubic-bezier(0.22, 1, 0.36, 1), filter 0.7s ease;
+        }
+        .tilt-card:hover .menu-card-img-container img {
+            transform: scale(1.15) rotate(1deg);
+            filter: brightness(1.1) saturate(1.2);
+        }
+        /* Image overlay glow on hover */
+        .menu-card-img-container::after {
+            content: ''; position: absolute; inset: 0;
+            background: radial-gradient(circle at center, rgba(212,168,83,0.15) 0%, transparent 70%);
+            opacity: 0; transition: opacity 0.5s ease;
+            pointer-events: none; border-radius: 1.5rem;
+        }
+        .tilt-card:hover .menu-card-img-container::after { opacity: 1; }
+        /* ========== PARALLAX HERO ========== */
+        #hero-slider { will-change: transform; }
+        /* ========== NAV SCROLL SHRINK ========== */
+        nav {
+            transition: background 0.4s ease, box-shadow 0.4s ease, padding 0.3s ease, backdrop-filter 0.4s ease !important;
+        }
+        nav.scrolled {
+            background: rgba(13,13,13,0.97) !important;
+            box-shadow: 0 4px 30px rgba(0,0,0,0.4), 0 1px 0 rgba(212,168,83,0.1);
+            padding-top: 0.5rem !important; padding-bottom: 0.5rem !important;
+        }
+        /* ========== ENHANCED HERO CTA SHINE ========== */
+        header a[href="#menu"] {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            position: relative; overflow: hidden;
+        }
+        header a[href="#menu"]:hover {
+            transform: translateY(-4px) scale(1.06);
+            box-shadow: 0 20px 60px -12px rgba(212, 168, 83, 0.6);
+        }
+        header a[href="#menu"]::before {
+            content: ''; position: absolute; inset: 0;
+            background: linear-gradient(120deg, transparent 30%, rgba(255,255,255,0.3) 50%, transparent 70%);
+            transform: translateX(-100%);
+        }
+        header a[href="#menu"]:hover::before {
+            transform: translateX(100%);
+            transition: transform 0.6s ease;
+        }
+        /* ========== ENHANCED CATEGORY TAB MICRO-INTERACTIONS ========== */
+        .cat-tab {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+            position: relative; overflow: hidden;
+        }
+        .cat-tab:hover:not(.active) {
+            background: rgba(212, 168, 83, 0.12);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(212, 168, 83, 0.1);
+        }
+        .cat-tab:active { transform: scale(0.92) !important; }
+        /* Ripple on click */
+        .cat-tab::after {
+            content: ''; position: absolute; width: 100%; height: 100%;
+            top: 0; left: 0; border-radius: inherit;
+            background: radial-gradient(circle, rgba(212,168,83,0.3) 10%, transparent 70%);
+            transform: scale(0); opacity: 0;
+            transition: transform 0.5s ease, opacity 0.5s ease;
+        }
+        .cat-tab:active::after { transform: scale(2); opacity: 1; transition: 0s; }
+        /* ========== BUTTON PRESS EFFECTS ========== */
+        nav button:hover { transform: scale(1.08); }
+        nav button:active { transform: scale(0.9); }
+        /* ========== FLOATING MOBILE CART ========== */
+        @keyframes floatGently {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            25% { transform: translateY(-5px) rotate(0.5deg); }
+            50% { transform: translateY(-8px) rotate(0deg); }
+            75% { transform: translateY(-3px) rotate(-0.5deg); }
+        }
+        #mobile-cart-bar.visible > button {
+            animation: floatGently 4s ease-in-out infinite;
+        }
+        /* ========== ENHANCED HERO STAGGER ========== */
+        .hero-stagger-1 { animation: heroSlideUp 1s 0.5s both cubic-bezier(0.22, 1, 0.36, 1); }
+        .hero-stagger-2 { animation: heroSlideUp 1s 0.8s both cubic-bezier(0.22, 1, 0.36, 1); }
+        .hero-stagger-3 { animation: heroSlideUp 1s 1.1s both cubic-bezier(0.22, 1, 0.36, 1); }
+        @keyframes heroSlideUp {
+            from { opacity: 0; transform: translateY(60px) scale(0.95); filter: blur(10px); }
+            to { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+        }
+        /* ========== GRAIN TEXTURE ========== */
+        #hero-slider::after {
+            content: ''; position: absolute; inset: 0; z-index: 15;
+            opacity: 0.04; pointer-events: none;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+        }
+        /* ========== SMOOTH BODY REVEAL ========== */
+        body { opacity: 0; transition: opacity 0.5s ease; }
+        body.loaded { opacity: 1; }
+        /* ========== CART SIDEBAR BACKDROP ========== */
+        #cart-sidebar::before {
+            content: ''; position: fixed; inset: 0;
+            background: rgba(0,0,0,0); transition: background 0.4s;
+            pointer-events: none; z-index: -1;
+        }
+        #cart-sidebar.open::before {
+            background: rgba(0,0,0,0.6);
+        }
+        /* Menu title animation */
+        #menu h3 {
+            background: linear-gradient(135deg, #d4a853, #f5e6c8);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        html { scroll-behavior: smooth; }
+        #menu { scroll-margin-top: 80px; }
+        /* ========== MAGNETIC BUTTON EFFECT ========== */
+        .magnetic-btn {
+            transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+        /* ========== ADD-TO-CART BOUNCE ========== */
+        @keyframes addBounce {
+            0% { transform: scale(1); }
+            25% { transform: scale(0.85); }
+            50% { transform: scale(1.15); }
+            75% { transform: scale(0.95); }
+            100% { transform: scale(1); }
+        }
+        .add-bounce { animation: addBounce 0.5s cubic-bezier(0.22, 1, 0.36, 1); }
+        /* ========== COUNTER PULSE ========== */
+        @keyframes counterPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.3); }
+        }
+        .counter-pulse { animation: counterPulse 0.3s ease; }
+        /* ========== SECTION PARALLAX LAYERS ========== */
+        .parallax-layer {
+            will-change: transform;
+            transition: transform 0.1s linear;
+        }
+        /* ========== GLOW BORDER ON MENU CARDS ========== */
+        .menu-card-glow {
+            position: relative;
+        }
+        .menu-card-glow::before {
+            content: ''; position: absolute; inset: -1px;
+            border-radius: 2.5rem;
+            background: linear-gradient(135deg, transparent 40%, rgba(212,168,83,0.3) 50%, transparent 60%);
+            background-size: 300% 300%;
+            opacity: 0; transition: opacity 0.5s ease;
+            z-index: -1;
+        }
+        .menu-card-glow:hover::before {
+            opacity: 1;
+            animation: glowRotate 3s linear infinite;
+        }
+        @keyframes glowRotate {
+            0% { background-position: 0% 0%; }
+            50% { background-position: 100% 100%; }
+            100% { background-position: 0% 0%; }
+        }
+        /* ========== TEXT GRADIENT ANIMATION ON HERO ========== */
+        .hero-title {
+            background: linear-gradient(135deg, #ffffff 0%, #f5e6c8 30%, #d4a853 60%, #ffffff 100%);
+            background-size: 300% 100%;
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: heroTextGradient 6s ease-in-out infinite;
+        }
+        @keyframes heroTextGradient {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+        /* ========== SMOOTH SLIDE TRANSITION (Ken Burns) ========== */
+        .slide.active {
+            animation: kenBurns 8s ease-in-out forwards;
+        }
+        @keyframes kenBurns {
+            0% { transform: scale(1) translate(0, 0); }
+            100% { transform: scale(1.08) translate(-1%, -1%); }
+        }
+        /* ========== PRICE TAG GLOW ========== */
+        .price-tag {
+            text-shadow: 0 0 20px rgba(212, 168, 83, 0.3);
+        }
+        /* ========== ORDER BUTTON GLOW ========== */
+        .order-btn {
+            position: relative; overflow: hidden;
+        }
+        .order-btn::before {
+            content: ''; position: absolute; inset: 0;
+            background: linear-gradient(120deg, transparent 30%, rgba(255,255,255,0.15) 50%, transparent 70%);
+            transform: translateX(-100%);
+            animation: btnShine 3s ease-in-out infinite;
+        }
+        @keyframes btnShine {
+            0%, 70%, 100% { transform: translateX(-100%); }
+            30%, 50% { transform: translateX(100%); }
+        }
     </style>
+  <meta property="og:title" content="DELICIOUS BITES | Live Store">
+  <meta name="twitter:title" content="DELICIOUS BITES | Live Store">
+  <meta name="description" content="Lovable Generated Project">
+  <meta property="og:description" content="Lovable Generated Project">
+  <meta name="twitter:description" content="Lovable Generated Project">
+  <meta property="og:image" content="https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/2510751e-0504-4837-876a-cd4b2f068119/id-preview-87e786b5--b9a8cbad-c57e-40e7-be13-7bccd39f0aa0.lovable.app-1775139414449.png">
+  <meta name="twitter:image" content="https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/2510751e-0504-4837-876a-cd4b2f068119/id-preview-87e786b5--b9a8cbad-c57e-40e7-be13-7bccd39f0aa0.lovable.app-1775139414449.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta property="og:type" content="website">
 </head>
-<body class="text-slate-900 overflow-x-hidden">
-
+<body class="overflow-x-hidden">
+    <!-- ========== CINEMATIC LOADER ========== -->
+    <div id="page-loader">
+        <canvas id="loader-particles"></canvas>
+        <span class="loader-brand">BITE BURST</span>
+        <span class="loader-tagline">Crafting Flavors</span>
+        <div class="loader-progress"><div class="loader-progress-bar"></div></div>
+    </div>
+    <!-- Custom Cursor -->
+    <div class="cursor-dot"></div>
+    <div class="cursor-ring"></div>
     <div class="admin-only fixed top-0 left-0 w-full bg-orange-600 text-white z-[110] p-3 shadow-xl text-center">
         <div class="max-w-7xl mx-auto flex flex-wrap justify-center items-center gap-4 text-xs font-bold uppercase">
             WA (91): <input type="text" id="wa-input" class="bg-orange-700 px-2 py-1 rounded outline-none w-28">
@@ -59,97 +385,88 @@
             <button onclick="toggleAdmin()" class="opacity-70">Exit</button>
         </div>
     </div>
-
-    <nav class="fixed top-0 w-full z-40 bg-white/80 backdrop-blur-md px-6 py-4 flex justify-between items-center border-b border-slate-100">
+    <nav class="fixed top-0 w-full z-40 bg-black/70 backdrop-blur-xl px-6 py-4 flex justify-between items-center border-b border-[#d4a853]/10">
         <div class="flex items-center gap-2">
-            <div id="admin-trigger" ondblclick="checkAdminPin()" class="w-10 h-10 bg-orange-600 rounded-xl flex items-center justify-center text-white cursor-pointer">
+            <div id="admin-trigger" ondblclick="checkAdminPin()" class="w-10 h-10 bg-gradient-to-br from-[#d4a853] to-[#c49638] rounded-xl flex items-center justify-center text-black cursor-pointer magnetic-btn">
                 <i class="fas fa-utensils"></i>
             </div>
-            <h1 id="site-title" class="edit-text text-xl font-black italic">DELICIOUS BITES</h1>
+            <h1 id="site-title" class="edit-text text-xl font-black italic text-[#f5e6c8]">DELICIOUS BITES</h1>
         </div>
-        <button onclick="toggleCart()" class="hidden md:flex bg-black text-white px-6 py-2.5 rounded-full font-bold text-sm items-center gap-2">
+        <button onclick="toggleCart()" class="hidden md:flex bg-gradient-to-r from-[#d4a853] to-[#c49638] text-black px-6 py-2.5 rounded-full font-bold text-sm items-center gap-2 magnetic-btn">
             <i class="fas fa-shopping-bag"></i> <span id="nav-cart-count">0</span>
         </button>
     </nav>
-
     <header id="hero-slider" class="min-h-screen flex items-center pt-16">
         <div id="slides-container" class="absolute inset-0"></div>
         <div class="hero-overlay absolute inset-0 z-10"></div>
-        <div class="relative z-20 p-8 lg:p-24 text-white">
-            <h2 id="hero-title" class="edit-text text-5xl md:text-8xl hero-title mb-6 leading-tight">Tasty <br> Memories.</h2>
-            <p id="hero-desc" class="edit-text text-slate-300 font-medium mb-12 max-w-sm">Handcrafted snacks. Delivered to your door. <strong>Pre-booked orders only (Order 1 day before).</strong></p>
-            <div><a href="#menu" class="bg-orange-600 text-white px-10 py-4 rounded-2xl font-black inline-block shadow-xl">Start Ordering</a></div>
+        <div class="relative z-20 p-8 lg:p-24 text-white hero-parallax-content">
+            <h2 id="hero-title" class="edit-text text-5xl md:text-8xl hero-title mb-6 leading-tight hero-stagger-1">Tasty <br> Memories.</h2>
+            <p id="hero-desc" class="edit-text text-[#a8a29e] font-medium mb-12 max-w-sm hero-stagger-2">Handcrafted snacks. Delivered to your door. <strong>Pre-booked orders only (Order 1 day before).</strong></p>
+            <div class="hero-stagger-3"><a href="#menu" class="bg-gradient-to-r from-[#d4a853] to-[#c49638] text-black px-10 py-4 rounded-2xl font-black inline-block shadow-xl magnetic-btn">Start Ordering</a></div>
         </div>
     </header>
-
     <section id="menu" class="max-w-7xl mx-auto px-6 py-24 pb-40">
-        <div class="flex flex-col md:flex-row justify-between items-center gap-6 mb-16">
+        <div class="flex flex-col md:flex-row justify-between items-center gap-6 mb-16 reveal">
             <h3 class="text-4xl md:text-5xl font-black italic">Menu</h3>
-            <div class="flex bg-slate-100 p-1.5 rounded-2xl gap-1 overflow-x-auto max-w-full">
-                <button onclick="filterCat('all')" id="cat-all" class="cat-tab active px-5 py-2 rounded-xl font-bold text-[10px] uppercase whitespace-nowrap">All</button>
-                <button onclick="filterCat('veg')" id="cat-veg" class="cat-tab px-5 py-2 rounded-xl font-bold text-[10px] uppercase whitespace-nowrap">Veg</button>
-                <button onclick="filterCat('nonveg')" id="cat-nonveg" class="cat-tab px-5 py-2 rounded-xl font-bold text-[10px] uppercase whitespace-nowrap">Non-Veg</button>
-                <button onclick="filterCat('dessert')" id="cat-dessert" class="cat-tab px-5 py-2 rounded-xl font-bold text-[10px] uppercase whitespace-nowrap">Desserts</button>
+            <div class="flex bg-[#1a1a1a] p-1.5 rounded-2xl gap-1 overflow-x-auto max-w-full border border-[#2a2a2a]">
+                <button onclick="filterCat('all')" id="cat-all" class="cat-tab active px-5 py-2 rounded-xl font-bold text-[10px] uppercase whitespace-nowrap text-[#a8a29e]">All</button>
+                <button onclick="filterCat('veg')" id="cat-veg" class="cat-tab px-5 py-2 rounded-xl font-bold text-[10px] uppercase whitespace-nowrap text-[#a8a29e]">Veg</button>
+                <button onclick="filterCat('nonveg')" id="cat-nonveg" class="cat-tab px-5 py-2 rounded-xl font-bold text-[10px] uppercase whitespace-nowrap text-[#a8a29e]">Non-Veg</button>
+                <button onclick="filterCat('dessert')" id="cat-dessert" class="cat-tab px-5 py-2 rounded-xl font-bold text-[10px] uppercase whitespace-nowrap text-[#a8a29e]">Desserts</button>
             </div>
             <button onclick="addNewDish()" class="admin-only bg-green-600 text-white px-6 py-2 rounded-xl font-bold shadow-lg">+ Add Item</button>
         </div>
         <div id="menu-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"></div>
     </section>
-
     <div id="mobile-cart-bar" class="fixed bottom-6 left-6 right-6 z-50 md:bottom-8 md:left-auto md:right-8 md:w-80">
-        <button onclick="toggleCart()" class="w-full bg-orange-600 text-white p-4 rounded-2xl shadow-2xl flex justify-between items-center hover:bg-orange-700 transition-colors">
+        <button onclick="toggleCart()" class="w-full bg-gradient-to-r from-[#d4a853] to-[#c49638] text-black p-4 rounded-2xl shadow-2xl flex justify-between items-center transition-colors">
             <div class="flex items-center gap-3">
-                <span id="mobile-cart-count" class="bg-white/20 w-8 h-8 flex items-center justify-center rounded-lg font-black text-sm">0</span>
+                <span id="mobile-cart-count" class="bg-black/20 w-8 h-8 flex items-center justify-center rounded-lg font-black text-sm">0</span>
                 <span class="font-bold text-sm tracking-tight">View your cart</span>
             </div>
             <span class="font-black text-lg">&#8377;<span id="mobile-cart-total">0</span> <i class="fas fa-chevron-right ml-2 text-xs opacity-50"></i></span>
         </button>
     </div>
-
-    <div id="cart-sidebar" class="fixed top-0 right-0 h-full w-full max-w-md bg-white shadow-2xl flex flex-col">
-        <div class="p-6 border-b flex justify-between items-center bg-white sticky top-0 z-10">
-            <h4 class="text-2xl font-black italic">Your Order</h4>
-            <button onclick="toggleCart()" class="text-slate-300 text-4xl leading-none">&times;</button>
+    <div id="cart-sidebar" class="fixed top-0 right-0 h-full w-full max-w-md bg-[#141414] shadow-2xl flex flex-col border-l border-[#2a2a2a]">
+        <div class="p-6 border-b border-[#2a2a2a] flex justify-between items-center bg-[#141414] sticky top-0 z-10">
+            <h4 class="text-2xl font-black italic text-[#f5e6c8]">Your Order</h4>
+            <button onclick="toggleCart()" class="text-[#555] text-4xl leading-none">&times;</button>
         </div>
         <div class="flex-1 overflow-y-auto p-6 space-y-6">
             <div id="cart-items" class="space-y-4"></div>
             <div class="space-y-3 pt-4">
-                <input type="text" id="cust-name" placeholder="Full Name" class="w-full p-4 rounded-xl bg-slate-100 font-bold text-sm outline-none border-2 border-transparent focus:border-orange-500">
-                <textarea id="cust-addr" placeholder="Full Delivery Address" class="w-full p-4 rounded-xl bg-slate-100 font-bold text-sm h-24 outline-none border-2 border-transparent focus:border-orange-500"></textarea>
+                <input type="text" id="cust-name" placeholder="Full Name" class="w-full p-4 rounded-xl bg-[#1a1a1a] font-bold text-sm outline-none border-2 border-[#2a2a2a] focus:border-[#d4a853] text-[#e8e4dd] placeholder-[#555]">
+                <textarea id="cust-addr" placeholder="Full Delivery Address" class="w-full p-4 rounded-xl bg-[#1a1a1a] font-bold text-sm h-24 outline-none border-2 border-[#2a2a2a] focus:border-[#d4a853] text-[#e8e4dd] placeholder-[#555]"></textarea>
                 
-                <div class="bg-slate-100 p-4 rounded-xl">
-                    <p class="text-[10px] font-black uppercase text-slate-400 mb-2 italic">Select Delivery Day</p>
-                    <input type="date" id="delivery-date" class="w-full bg-transparent font-bold text-sm outline-none" onchange="validateDeliveryDate(this)">
+                <div class="bg-[#1a1a1a] p-4 rounded-xl border border-[#2a2a2a]">
+                    <p class="text-[10px] font-black uppercase text-[#777] mb-2 italic">Select Delivery Day</p>
+                    <input type="date" id="delivery-date" class="w-full bg-transparent font-bold text-sm outline-none text-[#e8e4dd]" onchange="validateDeliveryDate(this)">
                 </div>
-
-                <div id="date-error-bar" class="hidden bg-red-100 border-l-4 border-red-500 p-3 rounded-lg">
-                    <p class="text-[11px] font-bold text-red-700 uppercase leading-tight">
+                <div id="date-error-bar" class="hidden bg-red-900/30 border-l-4 border-red-500 p-3 rounded-lg">
+                    <p class="text-[11px] font-bold text-red-400 uppercase leading-tight">
                         <i class="fas fa-exclamation-circle mr-1"></i> Only pre-booked orders accepted (Order at least 1 day before).
                     </p>
                 </div>
-
-                <div class="flex gap-2 p-1 bg-slate-100 rounded-xl">
-                    <button id="pay-cod" onclick="setPayment('COD')" class="flex-1 py-3 rounded-lg font-black text-[10px] uppercase bg-white shadow-sm text-orange-600">COD</button>
-                    <button id="pay-online" onclick="setPayment('PREPAID')" class="flex-1 py-3 rounded-lg font-black text-[10px] uppercase text-slate-400">Prepaid</button>
+                <div class="flex gap-2 p-1 bg-[#1a1a1a] rounded-xl border border-[#2a2a2a]">
+                    <button id="pay-cod" onclick="setPayment('COD')" class="flex-1 py-3 rounded-lg font-black text-[10px] uppercase bg-[#222] shadow-sm text-[#d4a853]">COD</button>
+                    <button id="pay-online" onclick="setPayment('PREPAID')" class="flex-1 py-3 rounded-lg font-black text-[10px] uppercase text-[#666]">Prepaid</button>
                 </div>
-
                 <div id="qr-container" class="hidden pt-4 flex flex-col items-center">
-                    <p class="text-[10px] font-black uppercase text-slate-400 mb-2">Scan to Pay</p>
-                    <img id="payment-qr" src="" class="w-48 h-48 rounded-xl border-4 border-slate-100">
+                    <p class="text-[10px] font-black uppercase text-[#777] mb-2">Scan to Pay</p>
+                    <img id="payment-qr" src="" class="w-48 h-48 rounded-xl border-4 border-[#2a2a2a]">
                 </div>
             </div>
         </div>
-        <div class="p-6 border-t bg-slate-50">
+        <div class="p-6 border-t border-[#2a2a2a] bg-[#111]">
             <div class="flex justify-between items-center mb-6">
-                <span class="font-bold text-slate-400 text-xs uppercase tracking-widest">Grand Total</span>
-                <span class="text-3xl font-black text-orange-600 italic">
+                <span class="font-bold text-[#777] text-xs uppercase tracking-widest">Grand Total</span>
+                <span class="text-3xl font-black text-[#d4a853] italic price-tag">
                     &#8377;<span id="cart-total" class="edit-text">0</span>
                 </span>
             </div>
-            <button onclick="sendOrder()" class="w-full bg-green-600 text-white py-5 rounded-2xl font-black text-lg shadow-lg active:scale-95 transition-transform">PLACE ORDER VIA WHATSAPP</button>
+            <button onclick="sendOrder()" class="order-btn w-full bg-gradient-to-r from-green-600 to-green-700 text-white py-5 rounded-2xl font-black text-lg shadow-lg active:scale-95 transition-transform">PLACE ORDER VIA WHATSAPP</button>
         </div>
     </div>
-
     <script>
         const firebaseConfig = {
             apiKey: "AIzaSyAnhMKWxrGBDgLpLw42LIAvgj7neFhaO7g",
@@ -159,34 +476,27 @@
         };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
-
         let siteData = { wa: "9100000000", qr: "", title: "DELICIOUS BITES", menu: [], heroTitle: "Tasty Memories.", heroDesc: "Handcrafted snacks.", slides: ["https://images.unsplash.com/photo-1601050690597-df056fb0179a?w=1200"] };
         let cart = [];
         let currentFilter = 'all';
         let slideIndex = 0;
         let paymentMethod = 'COD';
-
-        // Pre-fill with tomorrow's date
         const tomorrow = new Date();
         tomorrow.setDate(tomorrow.getDate() + 1);
         const tomorrowStr = tomorrow.toISOString().split('T')[0];
         document.getElementById('delivery-date').value = tomorrowStr;
-
         function validateDeliveryDate(input) {
             const selectedDate = new Date(input.value);
             selectedDate.setHours(0,0,0,0);
             const today = new Date();
             today.setHours(0,0,0,0);
             const errorBar = document.getElementById('date-error-bar');
-
-            // Only show error if date is today or earlier
             if (selectedDate <= today) {
                 errorBar.classList.remove('hidden');
             } else {
                 errorBar.classList.add('hidden');
             }
         }
-
         db.ref('siteData').on('value', (snap) => {
             if (snap.exists()) { 
                 siteData = snap.val(); 
@@ -195,7 +505,6 @@
                 applyDataToScreen(); 
             }
         });
-
         function applyDataToScreen() {
             document.getElementById('site-title').innerText = siteData.title;
             document.getElementById('hero-title').innerText = siteData.heroTitle;
@@ -206,14 +515,12 @@
             renderSlides();
             renderMenu();
         }
-
         function setPayment(m) {
             paymentMethod = m;
-            document.getElementById('pay-cod').className = m === 'COD' ? 'flex-1 py-3 rounded-lg font-black text-[10px] uppercase bg-white shadow-sm text-orange-600' : 'flex-1 py-3 rounded-lg font-black text-[10px] uppercase text-slate-400';
-            document.getElementById('pay-online').className = m === 'PREPAID' ? 'flex-1 py-3 rounded-lg font-black text-[10px] uppercase bg-white shadow-sm text-orange-600' : 'flex-1 py-3 rounded-lg font-black text-[10px] uppercase text-slate-400';
+            document.getElementById('pay-cod').className = m === 'COD' ? 'flex-1 py-3 rounded-lg font-black text-[10px] uppercase bg-[#222] shadow-sm text-[#d4a853]' : 'flex-1 py-3 rounded-lg font-black text-[10px] uppercase text-[#666]';
+            document.getElementById('pay-online').className = m === 'PREPAID' ? 'flex-1 py-3 rounded-lg font-black text-[10px] uppercase bg-[#222] shadow-sm text-[#d4a853]' : 'flex-1 py-3 rounded-lg font-black text-[10px] uppercase text-[#666]';
             document.getElementById('qr-container').classList.toggle('hidden', m !== 'PREPAID');
         }
-
         function renderSlides() {
             const container = document.getElementById('slides-container');
             container.innerHTML = '';
@@ -225,7 +532,6 @@
             });
             startSlideshow();
         }
-
         function startSlideshow() {
             clearInterval(window.slideTimer);
             window.slideTimer = setInterval(() => {
@@ -236,12 +542,10 @@
                 slides[slideIndex].classList.add('active');
             }, 5000);
         }
-
         function addSlide() {
             const url = prompt("Enter Image URL for new slide:");
             if(url) { siteData.slides.push(url); renderSlides(); }
         }
-
         function manageSlides() {
             let list = "Slides (d[index] to delete, [index] to change):\n";
             siteData.slides.forEach((s, i) => list += `${i}: ${s.substring(0, 20)}...\n`);
@@ -258,21 +562,26 @@
                 renderSlides();
             }
         }
-
         function checkAdminPin() { if(prompt("Admin PIN:") === "5566") toggleAdmin(); }
         function toggleAdmin() {
             const mode = document.body.classList.toggle('admin-mode');
             document.querySelectorAll('.edit-text').forEach(el => el.contentEditable = mode);
             renderMenu();
         }
-
+        function publishToCloud() {
+            siteData.title = document.getElementById('site-title').innerText;
+            siteData.heroTitle = document.getElementById('hero-title').innerText;
+            siteData.heroDesc = document.getElementById('hero-desc').innerHTML;
+            siteData.wa = document.getElementById('wa-input').value;
+            siteData.qr = document.getElementById('qr-input').value;
+            db.ref('siteData').set(siteData).then(() => alert("Saved!"));
+        }
         function filterCat(cat) {
             currentFilter = cat;
             document.querySelectorAll('.cat-tab').forEach(btn => btn.classList.remove('active'));
             document.getElementById('cat-' + cat).classList.add('active');
             renderMenu();
         }
-
         function renderMenu() {
             const grid = document.getElementById('menu-grid'); grid.innerHTML = '';
             const isAdmin = document.body.classList.contains('admin-mode');
@@ -284,36 +593,42 @@
                 const cartItem = cart.find(c => c.originalIndex === i);
                 const quantity = cartItem ? cartItem.quantity : 0;
                 grid.innerHTML += `
-                    <div class="bg-white rounded-[2.5rem] p-4 border border-slate-100 shadow-sm relative text-left">
+                    <div class="rounded-[2.5rem] p-4 relative text-left menu-card-glow" style="background: #181818; box-shadow: 8px 8px 20px #0a0a0a, -8px -8px 20px #252525; border: 1px solid #222;">
                         <div class="menu-card-img-container">
                             <img src="${item.img}" class="w-full h-full object-cover">
                             <div onclick="changeItemImg(${i})" class="admin-image-overlay">Replace Photo</div>
                         </div>
                         <div class="mt-5 px-2">
                              <p class="text-[9px] font-black uppercase tracking-widest ${catColor} mb-1">${catLabel}</p>
-                             <h4 contenteditable="${isAdmin}" onblur="siteData.menu[${i}].name=this.innerText" class="text-lg font-black leading-tight">${item.name}</h4>
+                             <h4 contenteditable="${isAdmin}" onblur="siteData.menu[${i}].name=this.innerText" class="text-lg font-black leading-tight text-[#f5e6c8]">${item.name}</h4>
                         </div>
                         <div class="flex justify-between items-center mt-4 px-2">
-                            <span class="text-xl font-black text-orange-600">&#8377;<span contenteditable="${isAdmin}" onblur="siteData.menu[${i}].price=this.innerText">${item.price.toString().replace('?', '').replace('?', '')}</span></span>
+                            <span class="text-xl font-black text-[#d4a853] price-tag">&#8377;<span contenteditable="${isAdmin}" onblur="siteData.menu[${i}].price=this.innerText">${item.price.toString().replace('?', '').replace('?', '')}</span></span>
                             <div class="relative w-24 h-9">
-                                <button onclick="handleInitialAdd(${i})" class="${quantity > 0 ? 'hidden' : 'flex'} absolute inset-0 bg-white border border-slate-200 text-orange-600 font-bold rounded-lg items-center justify-center shadow-sm text-[10px] uppercase">Add</button>
-                                <div class="${quantity > 0 ? 'flex' : 'hidden'} absolute inset-0 bg-orange-600 text-white rounded-lg items-center justify-between px-2 shadow-lg">
+                                <button onclick="handleInitialAdd(${i})" class="${quantity > 0 ? 'hidden' : 'flex'} absolute inset-0 bg-[#222] border border-[#333] text-[#d4a853] font-bold rounded-lg items-center justify-center shadow-sm text-[10px] uppercase magnetic-btn">Add</button>
+                                <div class="${quantity > 0 ? 'flex' : 'hidden'} absolute inset-0 bg-gradient-to-r from-[#d4a853] to-[#c49638] text-black rounded-lg items-center justify-between px-2 shadow-lg">
                                     <button onclick="changeQty(${i}, -1)" class="w-6 h-6 flex items-center justify-center font-bold">-</button>
                                     <span class="font-bold text-xs">${quantity}</span>
                                     <button onclick="changeQty(${i}, 1)" class="w-6 h-6 flex items-center justify-center font-bold">+</button>
                                 </div>
                             </div>
                         </div>
-                        <button onclick="siteData.menu.splice(${i},1);renderMenu()" class="admin-only absolute -top-2 -right-2 bg-red-500 text-white w-8 h-8 rounded-full flex items-center justify-center font-bold">×</button>
+                        <button onclick="siteData.menu.splice(${i},1);renderMenu()" class="admin-only absolute -top-2 -right-2 bg-red-500 text-white w-8 h-8 rounded-full flex items-center justify-center font-bold">?</button>
                     </div>`;
             });
         }
-
         function handleInitialAdd(index) {
             cart.push({ ...siteData.menu[index], quantity: 1, originalIndex: index });
+            // Add bounce animation to the card
+            var cards = document.querySelectorAll('#menu-grid > div');
+            cards.forEach(function(card, i) {
+                if (i === index || card.querySelector('[onclick*="handleInitialAdd(' + index + ')"]')) {
+                    card.classList.add('add-bounce');
+                    setTimeout(function() { card.classList.remove('add-bounce'); }, 500);
+                }
+            });
             updateCart(); renderMenu();
         }
-
         function changeQty(originalIndex, delta) {
             const idx = cart.findIndex(c => c.originalIndex === originalIndex);
             if (idx > -1) {
@@ -322,7 +637,6 @@
             }
             updateCart(); renderMenu();
         }
-
         function updateCart() {
             const list = document.getElementById('cart-items'); 
             const mobileBar = document.getElementById('mobile-cart-bar');
@@ -331,21 +645,23 @@
             cart.forEach((item, i) => {
                 const priceNum = parseInt(item.price.toString().replace(/[^0-9]/g, '')) || 0;
                 total += (priceNum * item.quantity); totalItems += item.quantity;
-                list.innerHTML += `<div class="flex justify-between items-center bg-slate-50 p-4 rounded-2xl">
-                    <div class="pr-2"><p class="font-bold text-xs uppercase">${item.name}</p><p class="text-[10px] text-slate-400 font-bold">${item.quantity} x &#8377;${item.price.toString().replace('?', '').replace('?', '')}</p></div>
+                list.innerHTML += `<div class="flex justify-between items-center bg-[#1a1a1a] p-4 rounded-2xl border border-[#2a2a2a]">
+                    <div class="pr-2"><p class="font-bold text-xs uppercase text-[#f5e6c8]">${item.name}</p><p class="text-[10px] text-[#777] font-bold">${item.quantity} x &#8377;${item.price.toString().replace('?', '').replace('?', '')}</p></div>
                     <button onclick="removeCompletely(${i})" class="text-red-400 font-black px-2 text-xl">&times;</button>
                 </div>`;
             });
-
             document.getElementById('cart-total').innerText = total;
             document.getElementById('mobile-cart-total').innerText = total;
             document.getElementById('nav-cart-count').innerText = totalItems;
             document.getElementById('mobile-cart-count').innerText = totalItems;
-
+            // Counter pulse animation
+            var countEls = [document.getElementById('nav-cart-count'), document.getElementById('mobile-cart-count')];
+            countEls.forEach(function(el) {
+                if (el) { el.classList.add('counter-pulse'); setTimeout(function() { el.classList.remove('counter-pulse'); }, 300); }
+            });
             if (totalItems > 0) mobileBar.classList.add('visible');
             else mobileBar.classList.remove('visible');
         }
-
         function removeCompletely(idx) { cart.splice(idx, 1); updateCart(); renderMenu(); }
         function toggleCart() { document.getElementById('cart-sidebar').classList.toggle('open'); }
         function addNewDish() { 
@@ -353,16 +669,6 @@
             siteData.menu.unshift({ name: "New Dish", price: "150", img: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400", category: cat }); 
             renderMenu(); 
         }
-
-        function publishToCloud() {
-            siteData.title = document.getElementById('site-title').innerText;
-            siteData.heroTitle = document.getElementById('hero-title').innerText;
-            siteData.heroDesc = document.getElementById('hero-desc').innerHTML;
-            siteData.wa = document.getElementById('wa-input').value;
-            siteData.qr = document.getElementById('qr-input').value;
-            db.ref('siteData').set(siteData).then(() => alert("Saved!"));
-        }
-
         function sendOrder() {
             const name = document.getElementById('cust-name').value;
             const addr = document.getElementById('cust-addr').value;
@@ -373,21 +679,250 @@
             selectedDate.setHours(0,0,0,0);
             const today = new Date();
             today.setHours(0,0,0,0);
-
             if (selectedDate <= today) {
                 document.getElementById('date-error-bar').classList.remove('hidden');
                 return alert("Only pre-booked orders accepted (Order at least 1 day before).");
             }
-
             if(!name || !addr || !delDate || !cart.length) return alert("Fill details!");
             
             let msg = `*NEW ORDER*%0A*Name:* ${name}%0A*Address:* ${addr}%0A*Delivery Date:* ${delDate}%0A*Payment:* ${paymentMethod}%0A%0A*Items:*%0A`;
-            cart.forEach(item => msg += `• ${item.name} (${item.quantity} x Rs.${item.price.toString().replace('?', '').replace('?', '')})%0A`);
+            cart.forEach(item => msg += `?? ${item.name} (${item.quantity} x Rs.${item.price.toString().replace('?', '').replace('?', '')})%0A`);
             msg += `%0A*Total: Rs. ${grandTotal}*`;
             window.open(`https://wa.me/${siteData.wa}?text=${msg}`, '_blank');
         }
-
         function changeItemImg(i) { const u = prompt("Img URL:"); if(u) { siteData.menu[i].img = u; renderMenu(); } }
+        /* ========== CINEMATIC LOADER WITH PARTICLES ========== */
+        (function() {
+            var canvas = document.getElementById('loader-particles');
+            if (!canvas) return;
+            var ctx = canvas.getContext('2d');
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            
+            var particles = [];
+            for (var i = 0; i < 60; i++) {
+                particles.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    size: Math.random() * 3 + 1,
+                    speedX: (Math.random() - 0.5) * 0.8,
+                    speedY: (Math.random() - 0.5) * 0.8,
+                    opacity: Math.random() * 0.5 + 0.1
+                });
+            }
+            
+            var loaderActive = true;
+            function animateParticles() {
+                if (!loaderActive) return;
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                particles.forEach(function(p) {
+                    p.x += p.speedX;
+                    p.y += p.speedY;
+                    if (p.x < 0) p.x = canvas.width;
+                    if (p.x > canvas.width) p.x = 0;
+                    if (p.y < 0) p.y = canvas.height;
+                    if (p.y > canvas.height) p.y = 0;
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                    ctx.fillStyle = 'rgba(212, 168, 83, ' + p.opacity + ')';
+                    ctx.fill();
+                });
+                // Draw connections
+                for (var i = 0; i < particles.length; i++) {
+                    for (var j = i + 1; j < particles.length; j++) {
+                        var dx = particles[i].x - particles[j].x;
+                        var dy = particles[i].y - particles[j].y;
+                        var dist = Math.sqrt(dx*dx + dy*dy);
+                        if (dist < 120) {
+                            ctx.beginPath();
+                            ctx.moveTo(particles[i].x, particles[i].y);
+                            ctx.lineTo(particles[j].x, particles[j].y);
+                            ctx.strokeStyle = 'rgba(212, 168, 83, ' + (0.08 * (1 - dist/120)) + ')';
+                            ctx.stroke();
+                        }
+                    }
+                }
+                requestAnimationFrame(animateParticles);
+            }
+            animateParticles();
+            
+            window.addEventListener('load', function() {
+                document.body.classList.add('loaded');
+                setTimeout(function() {
+                    var loader = document.getElementById('page-loader');
+                    if (loader) loader.classList.add('hide');
+                    setTimeout(function() { loaderActive = false; }, 1000);
+                }, 2200);
+            });
+        })();
+        /* ========== ENHANCED CUSTOM CURSOR WITH TRAIL ========== */
+        (function() {
+            if (window.matchMedia('(pointer: coarse)').matches) return;
+            var dot = document.querySelector('.cursor-dot');
+            var ring = document.querySelector('.cursor-ring');
+            if (!dot || !ring) return;
+            
+            var mx = 0, my = 0, rx = 0, ry = 0;
+            
+            // Create trail elements
+            var trails = [];
+            for (var i = 0; i < 6; i++) {
+                var trail = document.createElement('div');
+                trail.className = 'cursor-trail';
+                trail.style.opacity = (0.3 - i * 0.04);
+                trail.style.width = (4 - i * 0.5) + 'px';
+                trail.style.height = (4 - i * 0.5) + 'px';
+                document.body.appendChild(trail);
+                trails.push({ el: trail, x: 0, y: 0 });
+            }
+            
+            document.addEventListener('mousemove', function(e) {
+                mx = e.clientX; my = e.clientY;
+                dot.style.left = mx + 'px'; dot.style.top = my + 'px';
+            });
+            
+            function animateRing() {
+                rx += (mx - rx) * 0.12; ry += (my - ry) * 0.12;
+                ring.style.left = rx + 'px'; ring.style.top = ry + 'px';
+                
+                // Animate trails
+                var prevX = mx, prevY = my;
+                trails.forEach(function(t, i) {
+                    var speed = 0.15 - i * 0.015;
+                    t.x += (prevX - t.x) * speed;
+                    t.y += (prevY - t.y) * speed;
+                    t.el.style.left = t.x + 'px';
+                    t.el.style.top = t.y + 'px';
+                    prevX = t.x; prevY = t.y;
+                });
+                
+                requestAnimationFrame(animateRing);
+            }
+            animateRing();
+            
+            document.addEventListener('mouseenter', function() { 
+                dot.style.opacity = 1; ring.style.opacity = 1; 
+                trails.forEach(function(t) { t.el.style.display = 'block'; });
+            });
+            document.addEventListener('mouseleave', function() { 
+                dot.style.opacity = 0; ring.style.opacity = 0;
+                trails.forEach(function(t) { t.el.style.display = 'none'; });
+            });
+            document.addEventListener('mouseover', function(e) {
+                if (e.target.closest('button, a, [onclick], input, select, [contenteditable]')) {
+                    ring.classList.add('hover');
+                    dot.style.transform = 'translate(-50%, -50%) scale(1.5)';
+                } else {
+                    ring.classList.remove('hover');
+                    dot.style.transform = 'translate(-50%, -50%) scale(1)';
+                }
+            });
+        })();
+        /* ========== ENHANCED SCROLL REVEAL ========== */
+        (function() {
+            var observer = new IntersectionObserver(function(entries) {
+                entries.forEach(function(entry) {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('visible');
+                    }
+                });
+            }, { threshold: 0.1, rootMargin: '0px 0px -60px 0px' });
+            
+            function observeReveals() {
+                document.querySelectorAll('.reveal, .reveal-scale').forEach(function(el) {
+                    if (!el.classList.contains('visible')) observer.observe(el);
+                });
+            }
+            observeReveals();
+            
+            new MutationObserver(function() {
+                document.querySelectorAll('#menu-grid > div').forEach(function(card, i) {
+                    if (!card.classList.contains('reveal-scale') && !card.classList.contains('tilt-card')) {
+                        card.classList.add('reveal-scale', 'tilt-card', 'menu-card-glow');
+                        card.style.transitionDelay = (i * 0.1) + 's';
+                        observer.observe(card);
+                    }
+                });
+            }).observe(document.getElementById('menu-grid'), { childList: true });
+        })();
+        /* ========== ENHANCED 3D CARD TILT ========== */
+        (function() {
+            if (window.matchMedia('(pointer: coarse)').matches) return;
+            document.addEventListener('mousemove', function(e) {
+                var cards = document.querySelectorAll('.tilt-card');
+                cards.forEach(function(card) {
+                    var rect = card.getBoundingClientRect();
+                    var x = e.clientX - rect.left;
+                    var y = e.clientY - rect.top;
+                    if (x < 0 || y < 0 || x > rect.width || y > rect.height) {
+                        card.style.transform = 'perspective(600px) rotateX(0) rotateY(0) scale(1)';
+                        return;
+                    }
+                    var rotateY = ((x / rect.width) - 0.5) * 18;
+                    var rotateX = ((y / rect.height) - 0.5) * -18;
+                    card.style.transform = 'perspective(600px) rotateX(' + rotateX + 'deg) rotateY(' + rotateY + 'deg) scale(1.02)';
+                });
+            });
+            document.addEventListener('mouseleave', function() {
+                document.querySelectorAll('.tilt-card').forEach(function(card) {
+                    card.style.transform = 'perspective(600px) rotateX(0) rotateY(0) scale(1)';
+                });
+            });
+        })();
+        /* ========== ENHANCED PARALLAX HERO ========== */
+        (function() {
+            var hero = document.getElementById('hero-slider');
+            var heroContent = document.querySelector('.hero-parallax-content');
+            window.addEventListener('scroll', function() {
+                var scrollY = window.pageYOffset;
+                if (scrollY < window.innerHeight) {
+                    var slides = document.querySelectorAll('.slide');
+                    slides.forEach(function(slide) {
+                        slide.style.transform = 'translateY(' + (scrollY * 0.35) + 'px) scale(' + (1 + scrollY * 0.0003) + ')';
+                    });
+                    if (heroContent) {
+                        heroContent.style.transform = 'translateY(' + (scrollY * 0.2) + 'px)';
+                        heroContent.style.opacity = 1 - (scrollY / (window.innerHeight * 0.7));
+                    }
+                }
+            }, { passive: true });
+        })();
+        /* ========== NAV SCROLL EFFECT ========== */
+        (function() {
+            var nav = document.querySelector('nav');
+            window.addEventListener('scroll', function() {
+                if (window.pageYOffset > 50) {
+                    nav.classList.add('scrolled');
+                } else {
+                    nav.classList.remove('scrolled');
+                }
+            }, { passive: true });
+        })();
+        /* ========== MAGNETIC BUTTON EFFECT ========== */
+        (function() {
+            if (window.matchMedia('(pointer: coarse)').matches) return;
+            document.querySelectorAll('.magnetic-btn').forEach(function(btn) {
+                btn.addEventListener('mousemove', function(e) {
+                    var rect = btn.getBoundingClientRect();
+                    var x = e.clientX - rect.left - rect.width / 2;
+                    var y = e.clientY - rect.top - rect.height / 2;
+                    btn.style.transform = 'translate(' + (x * 0.2) + 'px, ' + (y * 0.2) + 'px)';
+                });
+                btn.addEventListener('mouseleave', function() {
+                    btn.style.transform = 'translate(0, 0)';
+                });
+            });
+        })();
+        /* ========== SMOOTH SCROLL FOR ANCHORS ========== */
+        document.querySelectorAll('a[href^="#"]').forEach(function(a) {
+            a.addEventListener('click', function(e) {
+                var target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    e.preventDefault();
+                    target.scrollIntoView({ behavior: 'smooth' });
+                }
+            });
+        });
     </script>
 </body>
 </html>
