@@ -345,6 +345,29 @@
             0%, 70%, 100% { transform: translateX(-100%); }
             30%, 50% { transform: translateX(100%); }
         }
+        /* ========== MOBILE FIXES ========== */
+        @media (max-width: 768px) {
+            header#hero-slider { min-height: 100svh; min-height: -webkit-fill-available; max-height: 100svh; }
+            .slide { background-size: cover; background-position: center; }
+            .slide.active { animation: kenBurnsMobile 8s ease-in-out forwards; }
+            @keyframes kenBurnsMobile {
+                0% { transform: scale(1) translate(0, 0); }
+                100% { transform: scale(1.03) translate(0, 0); }
+            }
+            .menu-card-img-container { height: 10rem; }
+            .menu-card-img-container img { width: 100%; height: 100%; object-fit: cover; }
+            #menu { px: 4; }
+            #menu-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 12px !important; }
+            #menu-grid > div { border-radius: 1.5rem !important; padding: 8px !important; }
+            #menu-grid > div h4 { font-size: 13px !important; }
+            #menu-grid > div .text-xl { font-size: 15px !important; }
+            header .hero-parallax-content { padding: 1.5rem !important; }
+            #hero-title { font-size: 2.5rem !important; }
+            #hero-desc { margin-bottom: 2rem !important; font-size: 14px !important; }
+            header a[href="#menu"] { padding: 12px 28px !important; font-size: 14px !important; }
+            * { max-width: 100vw; }
+            img, video { max-width: 100%; height: auto; }
+        }
     </style>
   <meta property="og:title" content="DELICIOUS BITES | Live Store">
   <meta name="twitter:title" content="DELICIOUS BITES | Live Store">
