@@ -406,12 +406,11 @@
     </div>
     <nav class="fixed top-0 w-full z-40 bg-black/70 backdrop-blur-xl px-6 py-4 flex justify-between items-center border-b border-[#d4a853]/10">
         <div class="flex items-center gap-2">
-            <div id="admin-trigger" ondblclick="checkAdminPin()" class="relative w-10 h-10 bg-gradient-to-br from-[#d4a853] to-[#c49638] rounded-xl flex items-center justify-center text-black cursor-pointer magnetic-btn overflow-hidden">
-                <i id="logo-icon" class="fas fa-utensils"></i>
-                <img id="logo-img" src="" class="hidden absolute inset-0 w-full h-full object-cover">
-                <div onclick="changeLogoImg()" class="admin-image-overlay" style="font-size: 7px;">Edit</div>
-            </div>
-            <h1 id="site-title" class="edit-text text-xl font-black italic text-[#f5e6c8]">DELICIOUS BITES</h1>
+            <div id="admin-trigger" ondblclick="checkAdminPin()" class="relative w-10 h-10 bg-transparent rounded-xl flex items-center justify-center text-black cursor-pointer magnetic-btn overflow-hidden">
+    <i id="logo-icon" class="fas fa-utensils text-[#d4a853]"></i> <img id="logo-img" src="" class="hidden absolute inset-0 w-full h-full object-cover">
+    <div onclick="changeLogoImg()" class="admin-image-overlay" style="font-size: 7px;">Edit</div>
+</div>
+            <h1 id="site-title" class="edit-text text-xl font-black italic text-[#f5e6c8]">BITE BURST</h1>
         </div>
         <button onclick="toggleCart()" class="hidden md:flex bg-gradient-to-r from-[#d4a853] to-[#c49638] text-black px-6 py-2.5 rounded-full font-bold text-sm items-center gap-2 magnetic-btn">
             <i class="fas fa-shopping-bag"></i> <span id="nav-cart-count">0</span>
