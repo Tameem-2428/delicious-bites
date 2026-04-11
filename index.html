@@ -380,14 +380,12 @@
   <meta property="og:type" content="website">
 </head>
 <body class="overflow-x-hidden">
-    <!-- ========== CINEMATIC LOADER ========== -->
     <div id="page-loader">
         <canvas id="loader-particles"></canvas>
         <span class="loader-brand">BITE BURST</span>
         <span class="loader-tagline">Crafting Flavors</span>
         <div class="loader-progress"><div class="loader-progress-bar"></div></div>
     </div>
-    <!-- Custom Cursor -->
     <div class="cursor-dot"></div>
     <div class="cursor-ring"></div>
     <div class="admin-only fixed top-0 left-0 w-full bg-orange-600 text-white z-[110] p-3 shadow-xl text-center">
@@ -397,11 +395,9 @@
             <div class="flex items-center gap-2 bg-orange-700 px-3 py-1 rounded">
                 CAT: 
                 <select id="new-item-cat" class="bg-transparent outline-none font-black cursor-pointer">
-                    <option value="veg" class="text-black">VEG</option>
-                    <option value="nonveg" class="text-black">NON-VEG</option>
-                    <option value="dessert" class="text-black">DESSERT</option>
-                </select>
+                    </select>
             </div>
+            <button onclick="manageCats()" class="bg-pink-600 px-4 py-1 rounded-full shadow-lg">Manage Cats</button>
             <button onclick="addSlide()" class="bg-blue-600 px-4 py-1 rounded-full shadow-lg">+ Slide</button>
             <button onclick="manageSlides()" class="bg-indigo-600 px-4 py-1 rounded-full shadow-lg">Edit Slides</button>
             <button onclick="publishToCloud()" class="bg-black px-4 py-1 rounded-full shadow-lg">Save Changes</button>
@@ -410,8 +406,10 @@
     </div>
     <nav class="fixed top-0 w-full z-40 bg-black/70 backdrop-blur-xl px-6 py-4 flex justify-between items-center border-b border-[#d4a853]/10">
         <div class="flex items-center gap-2">
-            <div id="admin-trigger" ondblclick="checkAdminPin()" class="w-10 h-10 bg-gradient-to-br from-[#d4a853] to-[#c49638] rounded-xl flex items-center justify-center text-black cursor-pointer magnetic-btn">
-                <i class="fas fa-utensils"></i>
+            <div id="admin-trigger" ondblclick="checkAdminPin()" class="relative w-10 h-10 bg-gradient-to-br from-[#d4a853] to-[#c49638] rounded-xl flex items-center justify-center text-black cursor-pointer magnetic-btn overflow-hidden">
+                <i id="logo-icon" class="fas fa-utensils"></i>
+                <img id="logo-img" src="" class="hidden absolute inset-0 w-full h-full object-cover">
+                <div onclick="changeLogoImg()" class="admin-image-overlay" style="font-size: 7px;">Edit</div>
             </div>
             <h1 id="site-title" class="edit-text text-xl font-black italic text-[#f5e6c8]">DELICIOUS BITES</h1>
         </div>
@@ -431,12 +429,8 @@
     <section id="menu" class="max-w-7xl mx-auto px-6 py-24 pb-40">
         <div class="flex flex-col md:flex-row justify-between items-center gap-6 mb-16 reveal">
             <h3 class="text-4xl md:text-5xl font-black italic">Menu</h3>
-            <div class="flex bg-[#1a1a1a] p-1.5 rounded-2xl gap-1 overflow-x-auto max-w-full border border-[#2a2a2a]">
-                <button onclick="filterCat('all')" id="cat-all" class="cat-tab active px-5 py-2 rounded-xl font-bold text-[10px] uppercase whitespace-nowrap text-[#a8a29e]">All</button>
-                <button onclick="filterCat('veg')" id="cat-veg" class="cat-tab px-5 py-2 rounded-xl font-bold text-[10px] uppercase whitespace-nowrap text-[#a8a29e]">Veg</button>
-                <button onclick="filterCat('nonveg')" id="cat-nonveg" class="cat-tab px-5 py-2 rounded-xl font-bold text-[10px] uppercase whitespace-nowrap text-[#a8a29e]">Non-Veg</button>
-                <button onclick="filterCat('dessert')" id="cat-dessert" class="cat-tab px-5 py-2 rounded-xl font-bold text-[10px] uppercase whitespace-nowrap text-[#a8a29e]">Desserts</button>
-            </div>
+            <div id="cat-nav" class="flex bg-[#1a1a1a] p-1.5 rounded-2xl gap-1 overflow-x-auto max-w-full border border-[#2a2a2a]">
+                </div>
             <button onclick="addNewDish()" class="admin-only bg-green-600 text-white px-6 py-2 rounded-xl font-bold shadow-lg">+ Add Item</button>
         </div>
         <div id="menu-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"></div>
@@ -499,7 +493,16 @@
         };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
-        let siteData = { wa: "9100000000", qr: "", title: "DELICIOUS BITES", menu: [], heroTitle: "Tasty Memories.", heroDesc: "Handcrafted snacks.", slides: ["https://images.unsplash.com/photo-1601050690597-df056fb0179a?w=1200"] };
+        let siteData = { 
+            wa: "9100000000", 
+            qr: "", 
+            title: "DELICIOUS BITES", 
+            menu: [], 
+            categories: ["veg", "nonveg", "dessert"], // New storage for categories
+            heroTitle: "Tasty Memories.", 
+            heroDesc: "Handcrafted snacks.", 
+            slides: ["https://images.unsplash.com/photo-1601050690597-df056fb0179a?w=1200"] 
+        };
         let cart = [];
         let currentFilter = 'all';
         let slideIndex = 0;
@@ -525,6 +528,7 @@
                 siteData = snap.val(); 
                 if(!siteData.menu) siteData.menu = [];
                 if(!siteData.slides) siteData.slides = ["https://images.unsplash.com/photo-1601050690597-df056fb0179a?w=1200"];
+                if(!siteData.categories) siteData.categories = ["veg", "nonveg", "dessert"];
                 applyDataToScreen(); 
             }
         });
@@ -535,8 +539,38 @@
             document.getElementById('wa-input').value = siteData.wa;
             document.getElementById('qr-input').value = siteData.qr;
             document.getElementById('payment-qr').src = siteData.qr;
+            applyLogo();
+            renderCategories();
             renderSlides();
             renderMenu();
+        }
+        function renderCategories() {
+            const nav = document.getElementById('cat-nav');
+            const select = document.getElementById('new-item-cat');
+            nav.innerHTML = `<button onclick="filterCat('all')" id="cat-all" class="cat-tab ${currentFilter === 'all' ? 'active' : ''} px-5 py-2 rounded-xl font-bold text-[10px] uppercase whitespace-nowrap text-[#a8a29e]">All</button>`;
+            select.innerHTML = '';
+            
+            siteData.categories.forEach(cat => {
+                const label = cat.toUpperCase().replace('-', ' ');
+                nav.innerHTML += `<button onclick="filterCat('${cat}')" id="cat-${cat}" class="cat-tab ${currentFilter === cat ? 'active' : ''} px-5 py-2 rounded-xl font-bold text-[10px] uppercase whitespace-nowrap text-[#a8a29e]">${label}</button>`;
+                select.innerHTML += `<option value="${cat}" class="text-black">${label}</option>`;
+            });
+        }
+        function manageCats() {
+            let list = "Current Categories:\n";
+            siteData.categories.forEach((c, i) => list += `${i}: ${c}\n`);
+            const action = prompt(`${list}\nType 'add [name]' to add (e.g., add starters)\nType 'del [index]' to remove (e.g., del 0)`);
+            
+            if (action) {
+                if (action.startsWith('add ')) {
+                    const newCat = action.replace('add ', '').trim().toLowerCase().replace(/\s+/g, '-');
+                    if(newCat && !siteData.categories.includes(newCat)) siteData.categories.push(newCat);
+                } else if (action.startsWith('del ')) {
+                    const idx = parseInt(action.replace('del ', ''));
+                    if (siteData.categories.length > 1) siteData.categories.splice(idx, 1);
+                }
+                renderCategories();
+            }
         }
         function setPayment(m) {
             paymentMethod = m;
@@ -611,8 +645,16 @@
             siteData.menu.forEach((item, i) => {
                 const itemCat = item.category || 'veg'; 
                 if(currentFilter !== 'all' && itemCat !== currentFilter) return;
-                const catLabel = itemCat === 'veg' ? 'VEG' : (itemCat === 'nonveg' ? 'NON-VEG' : 'DESSERT');
-                const catColor = itemCat === 'veg' ? 'text-green-600' : (itemCat === 'nonveg' ? 'text-red-600' : 'text-purple-600');
+                
+                // Dynamic label color logic
+                let catColor = 'text-green-600';
+                if(itemCat === 'nonveg') catColor = 'text-red-600';
+                else if(itemCat === 'dessert') catColor = 'text-purple-600';
+                else if(itemCat === 'starters') catColor = 'text-orange-500';
+                else if(itemCat === 'gravy') catColor = 'text-yellow-600';
+                else catColor = 'text-blue-500';
+
+                const catLabel = itemCat.toUpperCase().replace('-', ' ');
                 const cartItem = cart.find(c => c.originalIndex === i);
                 const quantity = cartItem ? cartItem.quantity : 0;
                 grid.innerHTML += `
@@ -642,7 +684,6 @@
         }
         function handleInitialAdd(index) {
             cart.push({ ...siteData.menu[index], quantity: 1, originalIndex: index });
-            // Add bounce animation to the card
             var cards = document.querySelectorAll('#menu-grid > div');
             cards.forEach(function(card, i) {
                 if (i === index || card.querySelector('[onclick*="handleInitialAdd(' + index + ')"]')) {
@@ -677,7 +718,6 @@
             document.getElementById('mobile-cart-total').innerText = total;
             document.getElementById('nav-cart-count').innerText = totalItems;
             document.getElementById('mobile-cart-count').innerText = totalItems;
-            // Counter pulse animation
             var countEls = [document.getElementById('nav-cart-count'), document.getElementById('mobile-cart-count')];
             countEls.forEach(function(el) {
                 if (el) { el.classList.add('counter-pulse'); setTimeout(function() { el.classList.remove('counter-pulse'); }, 300); }
@@ -697,7 +737,6 @@
             const addr = document.getElementById('cust-addr').value;
             const delDate = document.getElementById('delivery-date').value;
             const grandTotal = document.getElementById('cart-total').innerText;
-            
             const selectedDate = new Date(delDate);
             selectedDate.setHours(0,0,0,0);
             const today = new Date();
@@ -707,21 +746,38 @@
                 return alert("Only pre-booked orders accepted (Order at least 1 day before).");
             }
             if(!name || !addr || !delDate || !cart.length) return alert("Fill details!");
-            
             let msg = `*NEW ORDER*%0A*Name:* ${name}%0A*Address:* ${addr}%0A*Delivery Date:* ${delDate}%0A*Payment:* ${paymentMethod}%0A%0A*Items:*%0A`;
             cart.forEach(item => msg += `?? ${item.name} (${item.quantity} x Rs.${item.price.toString().replace('?', '').replace('?', '')})%0A`);
             msg += `%0A*Total: Rs. ${grandTotal}*`;
             window.open(`https://wa.me/${siteData.wa}?text=${msg}`, '_blank');
         }
         function changeItemImg(i) { const u = prompt("Img URL:"); if(u) { siteData.menu[i].img = u; renderMenu(); } }
-        /* ========== CINEMATIC LOADER WITH PARTICLES ========== */
+        function changeLogoImg() {
+            const u = prompt("Enter Logo Image URL:");
+            if(u !== null) { 
+                siteData.logo = u; 
+                applyLogo(); 
+            }
+        }
+        function applyLogo() {
+            const img = document.getElementById('logo-img');
+            const icon = document.getElementById('logo-icon');
+            if(siteData.logo) {
+                img.src = siteData.logo;
+                img.classList.remove('hidden');
+                icon.classList.add('hidden');
+            } else {
+                img.classList.add('hidden');
+                icon.classList.remove('hidden');
+            }
+        }
+        /* ========== LOADER, CURSOR, TILT, PARALLAX SCRIPTS REMAIN UNCHANGED ========== */
         (function() {
             var canvas = document.getElementById('loader-particles');
             if (!canvas) return;
             var ctx = canvas.getContext('2d');
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
-            
             var particles = [];
             for (var i = 0; i < 60; i++) {
                 particles.push({
@@ -733,14 +789,12 @@
                     opacity: Math.random() * 0.5 + 0.1
                 });
             }
-            
             var loaderActive = true;
             function animateParticles() {
                 if (!loaderActive) return;
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
                 particles.forEach(function(p) {
-                    p.x += p.speedX;
-                    p.y += p.speedY;
+                    p.x += p.speedX; p.y += p.speedY;
                     if (p.x < 0) p.x = canvas.width;
                     if (p.x > canvas.width) p.x = 0;
                     if (p.y < 0) p.y = canvas.height;
@@ -750,15 +804,13 @@
                     ctx.fillStyle = 'rgba(212, 168, 83, ' + p.opacity + ')';
                     ctx.fill();
                 });
-                // Draw connections
                 for (var i = 0; i < particles.length; i++) {
                     for (var j = i + 1; j < particles.length; j++) {
                         var dx = particles[i].x - particles[j].x;
                         var dy = particles[i].y - particles[j].y;
                         var dist = Math.sqrt(dx*dx + dy*dy);
                         if (dist < 120) {
-                            ctx.beginPath();
-                            ctx.moveTo(particles[i].x, particles[i].y);
+                            ctx.beginPath(); ctx.moveTo(particles[i].x, particles[i].y);
                             ctx.lineTo(particles[j].x, particles[j].y);
                             ctx.strokeStyle = 'rgba(212, 168, 83, ' + (0.08 * (1 - dist/120)) + ')';
                             ctx.stroke();
@@ -768,7 +820,6 @@
                 requestAnimationFrame(animateParticles);
             }
             animateParticles();
-            
             window.addEventListener('load', function() {
                 document.body.classList.add('loaded');
                 setTimeout(function() {
@@ -778,16 +829,12 @@
                 }, 2200);
             });
         })();
-        /* ========== ENHANCED CUSTOM CURSOR WITH TRAIL ========== */
         (function() {
             if (window.matchMedia('(pointer: coarse)').matches) return;
             var dot = document.querySelector('.cursor-dot');
             var ring = document.querySelector('.cursor-ring');
             if (!dot || !ring) return;
-            
             var mx = 0, my = 0, rx = 0, ry = 0;
-            
-            // Create trail elements
             var trails = [];
             for (var i = 0; i < 6; i++) {
                 var trail = document.createElement('div');
@@ -798,39 +845,25 @@
                 document.body.appendChild(trail);
                 trails.push({ el: trail, x: 0, y: 0 });
             }
-            
             document.addEventListener('mousemove', function(e) {
                 mx = e.clientX; my = e.clientY;
                 dot.style.left = mx + 'px'; dot.style.top = my + 'px';
             });
-            
             function animateRing() {
                 rx += (mx - rx) * 0.12; ry += (my - ry) * 0.12;
                 ring.style.left = rx + 'px'; ring.style.top = ry + 'px';
-                
-                // Animate trails
                 var prevX = mx, prevY = my;
                 trails.forEach(function(t, i) {
                     var speed = 0.15 - i * 0.015;
-                    t.x += (prevX - t.x) * speed;
-                    t.y += (prevY - t.y) * speed;
-                    t.el.style.left = t.x + 'px';
-                    t.el.style.top = t.y + 'px';
+                    t.x += (prevX - t.x) * speed; t.y += (prevY - t.y) * speed;
+                    t.el.style.left = t.x + 'px'; t.el.style.top = t.y + 'px';
                     prevX = t.x; prevY = t.y;
                 });
-                
                 requestAnimationFrame(animateRing);
             }
             animateRing();
-            
-            document.addEventListener('mouseenter', function() { 
-                dot.style.opacity = 1; ring.style.opacity = 1; 
-                trails.forEach(function(t) { t.el.style.display = 'block'; });
-            });
-            document.addEventListener('mouseleave', function() { 
-                dot.style.opacity = 0; ring.style.opacity = 0;
-                trails.forEach(function(t) { t.el.style.display = 'none'; });
-            });
+            document.addEventListener('mouseenter', function() { dot.style.opacity = 1; ring.style.opacity = 1; });
+            document.addEventListener('mouseleave', function() { dot.style.opacity = 0; ring.style.opacity = 0; });
             document.addEventListener('mouseover', function(e) {
                 if (e.target.closest('button, a, [onclick], input, select, [contenteditable]')) {
                     ring.classList.add('hover');
@@ -841,23 +874,16 @@
                 }
             });
         })();
-        /* ========== ENHANCED SCROLL REVEAL ========== */
         (function() {
             var observer = new IntersectionObserver(function(entries) {
-                entries.forEach(function(entry) {
-                    if (entry.isIntersecting) {
-                        entry.target.classList.add('visible');
-                    }
-                });
+                entries.forEach(function(entry) { if (entry.isIntersecting) entry.target.classList.add('visible'); });
             }, { threshold: 0.1, rootMargin: '0px 0px -60px 0px' });
-            
             function observeReveals() {
                 document.querySelectorAll('.reveal, .reveal-scale').forEach(function(el) {
                     if (!el.classList.contains('visible')) observer.observe(el);
                 });
             }
             observeReveals();
-            
             new MutationObserver(function() {
                 document.querySelectorAll('#menu-grid > div').forEach(function(card, i) {
                     if (!card.classList.contains('reveal-scale') && !card.classList.contains('tilt-card')) {
@@ -868,7 +894,6 @@
                 });
             }).observe(document.getElementById('menu-grid'), { childList: true });
         })();
-        /* ========== ENHANCED 3D CARD TILT ========== */
         (function() {
             if (window.matchMedia('(pointer: coarse)').matches) return;
             document.addEventListener('mousemove', function(e) {
@@ -892,17 +917,13 @@
                 });
             });
         })();
-        /* ========== ENHANCED PARALLAX HERO ========== */
         (function() {
-            var hero = document.getElementById('hero-slider');
             var heroContent = document.querySelector('.hero-parallax-content');
             window.addEventListener('scroll', function() {
                 var scrollY = window.pageYOffset;
                 if (scrollY < window.innerHeight) {
                     var slides = document.querySelectorAll('.slide');
-                    slides.forEach(function(slide) {
-                        slide.style.transform = 'translateY(' + (scrollY * 0.35) + 'px) scale(' + (1 + scrollY * 0.0003) + ')';
-                    });
+                    slides.forEach(function(slide) { slide.style.transform = 'translateY(' + (scrollY * 0.35) + 'px) scale(' + (1 + scrollY * 0.0003) + ')'; });
                     if (heroContent) {
                         heroContent.style.transform = 'translateY(' + (scrollY * 0.2) + 'px)';
                         heroContent.style.opacity = 1 - (scrollY / (window.innerHeight * 0.7));
@@ -910,18 +931,13 @@
                 }
             }, { passive: true });
         })();
-        /* ========== NAV SCROLL EFFECT ========== */
         (function() {
             var nav = document.querySelector('nav');
             window.addEventListener('scroll', function() {
-                if (window.pageYOffset > 50) {
-                    nav.classList.add('scrolled');
-                } else {
-                    nav.classList.remove('scrolled');
-                }
+                if (window.pageYOffset > 50) nav.classList.add('scrolled');
+                else nav.classList.remove('scrolled');
             }, { passive: true });
         })();
-        /* ========== MAGNETIC BUTTON EFFECT ========== */
         (function() {
             if (window.matchMedia('(pointer: coarse)').matches) return;
             document.querySelectorAll('.magnetic-btn').forEach(function(btn) {
@@ -931,19 +947,13 @@
                     var y = e.clientY - rect.top - rect.height / 2;
                     btn.style.transform = 'translate(' + (x * 0.2) + 'px, ' + (y * 0.2) + 'px)';
                 });
-                btn.addEventListener('mouseleave', function() {
-                    btn.style.transform = 'translate(0, 0)';
-                });
+                btn.addEventListener('mouseleave', function() { btn.style.transform = 'translate(0, 0)'; });
             });
         })();
-        /* ========== SMOOTH SCROLL FOR ANCHORS ========== */
         document.querySelectorAll('a[href^="#"]').forEach(function(a) {
             a.addEventListener('click', function(e) {
                 var target = document.querySelector(this.getAttribute('href'));
-                if (target) {
-                    e.preventDefault();
-                    target.scrollIntoView({ behavior: 'smooth' });
-                }
+                if (target) { e.preventDefault(); target.scrollIntoView({ behavior: 'smooth' }); }
             });
         });
     </script>
