@@ -9,12 +9,18 @@
     <meta property="og:description" content="Order the best food directly via WhatsApp.">
     <meta property="og:image" content="https://images.unsplash.com/photo-1601050690597-df056fb0179a?w=1200">
     <meta property="og:type" content="website">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://client2-ac52d-default-rtdb.asia-southeast1.firebasedatabase.app">
     
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-auth-compat.js"></script>
+    
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js" defer></script>
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js" defer></script>
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-auth-compat.js" defer></script>
+    
     <style>
     :root {
         --bg-main: #0b0b0b;
@@ -63,7 +69,8 @@
         body { font-family: 'Nunito', sans-serif; background: #0d0d0d; scroll-behavior: smooth; -webkit-tap-highlight-color: transparent; color: #e8e4dd; }
         .hero-title { font-family: 'Playfair Display', serif; font-style: italic; font-weight: 800; }
         
-        .menu-card-img-container { position: relative; overflow: hidden; border-radius: 1.5rem; height: 14rem; background: #1a1a1a; }
+        /* PERFORMANCE OPTIMIZATION: Added explicit width and display to prevent layout shifts */
+        .menu-card-img-container { position: relative; overflow: hidden; border-radius: 1.5rem; height: 14rem; background: #1a1a1a; width: 100%; display: block; }
         
         #cart-sidebar { transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1); transform: translateX(100%); z-index: 100; }
         #cart-sidebar.open { transform: translateX(0); }
@@ -399,12 +406,11 @@
                 0% { transform: scale(1) translate(0, 0); }
                 100% { transform: scale(1.03) translate(0, 0); }
             }
-            .menu-card-img-container { height: 14rem; }
+            .menu-card-img-container { height: 10rem; }
             .menu-card-img-container img { width: 100%; height: 100%; object-fit: cover; }
             #menu { px: 4; }
-            #menu-grid { grid-template-columns: repeat(6, 85vw) !important; gap: 16px !important; overflow-x: auto; scroll-snap-type: x mandatory; -ms-overflow-style: none; scrollbar-width: none; }
-            #menu-grid::-webkit-scrollbar { display: none; }
-            #menu-grid > div { border-radius: 1.5rem !important; padding: 12px !important; scroll-snap-align: center; width: 100%; }
+            #menu-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 12px !important; }
+            #menu-grid > div { border-radius: 1.5rem !important; padding: 8px !important; }
             #menu-grid > div h4 { font-size: 13px !important; }
             #menu-grid > div .text-xl { font-size: 15px !important; }
             header .hero-parallax-content { padding: 1.5rem !important; }
@@ -545,9 +551,71 @@
             appId: "1:37110712493:web:24752e5bc8ae53cdae9e24",
             measurementId: "G-WGD5TT4EHH"
         };
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.database();
-        let siteData = { 
+        
+        // Wait for deferred scripts to load before initializing
+        window.addEventListener('DOMContentLoaded', () => {
+            // Check if firebase is defined, if not, wait slightly (due to defer)
+            const initFirebase = setInterval(() => {
+                if (typeof firebase !== 'undefined') {
+                    clearInterval(initFirebase);
+                    firebase.initializeApp(firebaseConfig);
+                    const db = firebase.database();
+                    
+                    let siteData = { 
+                        wa: "9100000000", 
+                        qr: "", 
+                        title: "BITE BURST", 
+                        menu: [], 
+                        categories: ["veg", "nonveg", "dessert"], 
+                        heroTitle: "Tasty Memories.", 
+                        heroDesc: "Handcrafted snacks.", 
+                        slides: ["https://images.unsplash.com/photo-1601050690597-df056fb0179a?w=1200"] 
+                    };
+                    
+                    db.ref('siteData').on('value', (snap) => {
+                        if (snap.exists()) { 
+                            window.siteData = snap.val(); 
+                            if(!window.siteData.menu) window.siteData.menu = [];
+                            if(!window.siteData.slides) window.siteData.slides = ["https://images.unsplash.com/photo-1601050690597-df056fb0179a?w=1200"];
+                            if(!window.siteData.categories) window.siteData.categories = ["veg", "nonveg", "dessert"];
+                            
+                            // Phase 2: Initialize Schedule & Override logic Defaults
+                            if(window.siteData.manualClose === undefined) window.siteData.manualClose = false;
+                            if(!window.siteData.schedule) window.siteData.schedule = {};
+                            
+                            // Automatic Stock Reset Logic
+                            let stockChanged = false;
+                            const now = new Date();
+                            const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
+                            const istDate = new Date(utc + (3600000 * 5.5));
+                            const todayStr = istDate.toISOString().split('T')[0];
+
+                            window.siteData.menu.forEach(item => {
+                                if (item.lastUpdated !== todayStr) {
+                                    item.stockStatus = true;
+                                    item.lastUpdated = todayStr;
+                                    stockChanged = true;
+                                } else if (item.stockStatus === undefined) {
+                                    item.stockStatus = true;
+                                    item.lastUpdated = todayStr;
+                                    stockChanged = true;
+                                }
+                            });
+
+                            if (stockChanged) {
+                                db.ref('siteData/menu').set(window.siteData.menu);
+                            }
+
+                            applyDataToScreen(); 
+                            applyTheme();
+                        }
+                    });
+                }
+            }, 50);
+        });
+
+        // Make variables global to match your original scope
+        window.siteData = { 
             wa: "9100000000", 
             qr: "", 
             title: "BITE BURST", 
@@ -557,12 +625,10 @@
             heroDesc: "Handcrafted snacks.", 
             slides: ["https://images.unsplash.com/photo-1601050690597-df056fb0179a?w=1200"] 
         };
-        
         let cart = JSON.parse(localStorage.getItem('biteBurstCart')) || [];
         let currentFilter = 'all';
         let slideIndex = 0;
         let paymentMethod = 'COD';
-
         let currentMultiIndex = -1;
         let tempMultiQty = {};
 
@@ -595,50 +661,10 @@
             if(nav) nav.addEventListener('scroll', updateCatArrows);
             window.addEventListener('resize', updateCatArrows);
         });
-        // ===========================================
-
-        db.ref('siteData').on('value', (snap) => {
-            if (snap.exists()) { 
-                siteData = snap.val(); 
-                if(!siteData.menu) siteData.menu = [];
-                if(!siteData.slides) siteData.slides = ["https://images.unsplash.com/photo-1601050690597-df056fb0179a?w=1200"];
-                if(!siteData.categories) siteData.categories = ["veg", "nonveg", "dessert"];
-                
-                // Phase 2: Initialize Schedule & Override logic Defaults
-                if(siteData.manualClose === undefined) siteData.manualClose = false;
-                if(!siteData.schedule) siteData.schedule = {};
-                
-                // Automatic Stock Reset Logic
-                let stockChanged = false;
-                const now = new Date();
-                const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
-                const istDate = new Date(utc + (3600000 * 5.5));
-                const todayStr = istDate.toISOString().split('T')[0];
-
-                siteData.menu.forEach(item => {
-                    if (item.lastUpdated !== todayStr) {
-                        item.stockStatus = true;
-                        item.lastUpdated = todayStr;
-                        stockChanged = true;
-                    } else if (item.stockStatus === undefined) {
-                        item.stockStatus = true;
-                        item.lastUpdated = todayStr;
-                        stockChanged = true;
-                    }
-                });
-
-                if (stockChanged) {
-                    db.ref('siteData/menu').set(siteData.menu);
-                }
-
-                applyDataToScreen(); 
-                applyTheme();
-            }
-        });
 
         // Phase 2: Store Operational Logic synced to IST
-      function isStoreOpen() {
-            if (siteData.manualClose) return false;
+        function isStoreOpen() {
+            if (window.siteData.manualClose) return false;
             const now = new Date();
             const days = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
             
@@ -647,44 +673,40 @@
             
             const curMin = (now.getHours() * 60) + now.getMinutes();
 
-            // 1. Check Today's Schedule
-            const s = siteData.schedule[todayStr];
+            const s = window.siteData.schedule[todayStr];
             if (s && !s.isClosed) {
                 const [oH, oM] = s.open.split(':').map(Number);
                 const [cH, cM] = s.close.split(':').map(Number);
                 const o = oH * 60 + oM;
                 let c = cH * 60 + cM;
-                if (c === 0) c = 1440; // Treat 00:00 as end of day
+                if (c === 0) c = 1440; 
                 
                 if (o < c && curMin >= o && curMin <= c) return true;
-                if (o > c && curMin >= o) return true; // Shift starts today, ends tomorrow
+                if (o > c && curMin >= o) return true; 
             }
 
-            // 2. Check Yesterday's Schedule (to see if an overnight shift is still active)
-            const y = siteData.schedule[yesterdayStr];
+            const y = window.siteData.schedule[yesterdayStr];
             if (y && !y.isClosed) {
                 const [oH, oM] = y.open.split(':').map(Number);
                 const [cH, cM] = y.close.split(':').map(Number);
                 const o = oH * 60 + oM;
                 const c = cH * 60 + cM;
-                if (o > c && curMin <= c) return true; // We are in the "after midnight" part
+                if (o > c && curMin <= c) return true; 
             }
 
             return false;
         }
 
         function applyTheme() {
-            const bg = siteData.themeBg || "#0d0d0d";
-            const acc = siteData.themeAccent || "#d4a853";
+            const bg = window.siteData.themeBg || "#0d0d0d";
+            const acc = window.siteData.themeAccent || "#d4a853";
             
-            // Smart Contrast Logic
             const r = parseInt(bg.slice(1,3), 16), g = parseInt(bg.slice(3,5), 16), b = parseInt(bg.slice(5,7), 16);
             const brightness = (r * 299 + g * 587 + b * 114) / 1000;
             const textColor = brightness > 125 ? "#111111" : "#e8e4dd";
             const subTextColor = brightness > 125 ? "#444444" : "#a8a29e";
             const cardBg = brightness > 125 ? "rgba(0,0,0,0.05)" : "rgba(255,255,255,0.05)";
 
-            // Dynamic Golden Text Color for Dish Names
             const accR = parseInt(acc.slice(1,3), 16), accG = parseInt(acc.slice(3,5), 16), accB = parseInt(acc.slice(5,7), 16);
             const darkGold = `rgb(${Math.floor(accR * 0.5)}, ${Math.floor(accG * 0.5)}, ${Math.floor(accB * 0.5)})`;
             const dishTextColor = brightness > 125 ? darkGold : acc;
@@ -701,18 +723,16 @@
         }
 
         function applyDataToScreen() {
-            document.getElementById('site-title').innerText = siteData.title;
-            document.getElementById('hero-title').innerText = siteData.heroTitle;
-            document.getElementById('hero-desc').innerHTML = siteData.heroDesc;
-            document.getElementById('payment-qr').src = siteData.qr;
+            document.getElementById('site-title').innerText = window.siteData.title;
+            document.getElementById('hero-title').innerText = window.siteData.heroTitle;
+            document.getElementById('hero-desc').innerHTML = window.siteData.heroDesc;
+            document.getElementById('payment-qr').src = window.siteData.qr;
             applyLogo();
             renderCategories();
             renderSlides();
             renderMenu();
-            
             updateCart();
 
-            // Phase 2: Manage the Glass Wall UI based on Store Open logic
             const overlay = document.getElementById('closed-overlay');
             if(!isStoreOpen() && overlay.style.pointerEvents !== 'none') {
                 overlay.classList.remove('hidden');
@@ -723,12 +743,11 @@
             }
         }
 
-        
         function renderCategories() {
             const nav = document.getElementById('cat-nav');
             nav.innerHTML = `<button onclick="filterCat('all')" id="cat-all" class="cat-tab ${currentFilter === 'all' ? 'active' : ''} px-5 py-2 rounded-xl font-bold text-[10px] uppercase whitespace-nowrap text-[#a8a29e]">All</button>`;
             
-            siteData.categories.forEach(cat => {
+            window.siteData.categories.forEach(cat => {
                 const label = cat.toUpperCase().replace('-', ' ');
                 nav.innerHTML += `<button onclick="filterCat('${cat}')" id="cat-${cat}" class="cat-tab ${currentFilter === cat ? 'active' : ''} px-5 py-2 rounded-xl font-bold text-[10px] uppercase whitespace-nowrap text-[#a8a29e]">${label}</button>`;
             });
@@ -741,10 +760,11 @@
             document.getElementById('pay-online').className = m === 'PREPAID' ? 'flex-1 py-3 rounded-lg font-black text-[10px] uppercase bg-[#222] shadow-sm text-[#d4a853]' : 'flex-1 py-3 rounded-lg font-black text-[10px] uppercase text-[#666]';
             document.getElementById('qr-container').classList.toggle('hidden', m !== 'PREPAID');
         }
+
         function renderSlides() {
             const container = document.getElementById('slides-container');
             container.innerHTML = '';
-            siteData.slides.forEach((url, i) => {
+            window.siteData.slides.forEach((url, i) => {
                 const div = document.createElement('div');
                 div.className = `slide ${i === 0 ? 'active' : ''}`;
                 div.style.backgroundImage = `url('${url}')`;
@@ -752,6 +772,7 @@
             });
             startSlideshow();
         }
+
         function startSlideshow() {
             clearInterval(window.slideTimer);
             window.slideTimer = setInterval(() => {
@@ -772,14 +793,14 @@
         
         function renderMenu() {
             const grid = document.getElementById('menu-grid'); grid.innerHTML = '';
-            const storeOpen = isStoreOpen(); // Check status before rendering
-            if (!siteData.catColors) siteData.catColors = {};
+            const storeOpen = isStoreOpen(); 
+            if (!window.siteData.catColors) window.siteData.catColors = {};
 
-            siteData.menu.forEach((item, i) => {
+            window.siteData.menu.forEach((item, i) => {
                 const itemCat = item.category || 'veg'; 
                 if(currentFilter !== 'all' && itemCat !== currentFilter) return;
                 
-                const labelColor = siteData.catColors[itemCat] || "var(--accent)";
+                const labelColor = window.siteData.catColors[itemCat] || "var(--accent)";
                 const catLabel = itemCat.toUpperCase().replace('-', ' ');
                 
                 const isOutOfStock = item.stockStatus === false;
@@ -836,7 +857,7 @@
                 grid.innerHTML += `
                     <div class="menu-card rounded-[2.5rem] p-4 relative text-left menu-card-glow">
                         <div class="menu-card-img-container">
-                            <img src="${item.img}" class="w-full h-full object-cover" loading="lazy">
+                            <img src="${item.img}" class="w-full h-full object-cover" loading="lazy" alt="${item.name}">
                         </div>
                         <div class="mt-5 px-2">
                             <p class="text-[9px] font-black uppercase tracking-widest mb-1" style="color: ${labelColor}">${catLabel}</p>
@@ -854,7 +875,7 @@
         }
         
         function handleInitialAdd(index) {
-            cart.push({ ...siteData.menu[index], quantity: 1, originalIndex: index });
+            cart.push({ ...window.siteData.menu[index], quantity: 1, originalIndex: index });
             updateCart(); renderMenu();
         }
         function changeQty(originalIndex, delta) {
@@ -901,7 +922,7 @@
         
         function openMultiModal(index) {
             currentMultiIndex = index;
-            const item = siteData.menu[index];
+            const item = window.siteData.menu[index];
             document.getElementById('multi-modal-title').innerText = item.name;
             tempMultiQty = {};
             
@@ -915,7 +936,7 @@
         }
 
         function renderMultiModalOptions() {
-            const item = siteData.menu[currentMultiIndex];
+            const item = window.siteData.menu[currentMultiIndex];
             const container = document.getElementById('multi-modal-options');
             container.innerHTML = '';
             item.options.forEach((opt, optIndex) => {
@@ -944,7 +965,7 @@
         }
 
         function saveMultiSelection() {
-            const item = siteData.menu[currentMultiIndex];
+            const item = window.siteData.menu[currentMultiIndex];
             
             item.options.forEach((opt, optIndex) => {
                 const qty = tempMultiQty[optIndex] || 0;
@@ -979,40 +1000,38 @@
         }
 
         function sendOrder() {
-        
             const name = document.getElementById('cust-name').value;
             const phoneInput = document.getElementById('cust-phone').value;
-            const phone = phoneInput.replace(/\D/g, ''); // Extract only digits for validation
+            const phone = phoneInput.replace(/\D/g, ''); 
             const addr = document.getElementById('cust-addr').value;
             
-            // Phase 2: Checkout Validation Logic
             if(!isStoreOpen()) return alert("The store is currently closed! We are not accepting orders at this time.");
             if(!name || !addr || !cart.length) return alert("Please fill in all details!");
             if(phone.length !== 10) return alert("Please enter a valid 10-digit phone number!");
     
-              let secureTotal = 0;
-             cart.forEach(item => {
-            const p = item.optionPrice ? item.optionPrice : (parseInt(item.price.toString().replace(/[^0-9]/g, '')) || 0);
-             secureTotal += (p * item.quantity);
-           });
+            let secureTotal = 0;
+            cart.forEach(item => {
+                const p = item.optionPrice ? item.optionPrice : (parseInt(item.price.toString().replace(/[^0-9]/g, '')) || 0);
+                secureTotal += (p * item.quantity);
+            });
 
-             let msg = `*NEW ORDER*%0A*Name:* ${name}%0A*Phone:* ${phoneInput}%0A*Address:* ${addr}%0A*Payment:* ${paymentMethod}%0A%0A*Items:*%0A`;
+            let msg = `*NEW ORDER*%0A*Name:* ${name}%0A*Phone:* ${phoneInput}%0A*Address:* ${addr}%0A*Payment:* ${paymentMethod}%0A%0A*Items:*%0A`;
     
-          cart.forEach(item => {
-          const optText = item.optionName ? ` [${item.optionName}]` : '';
-          const p = item.optionPrice ? item.optionPrice : item.price;
-          msg += `• ${item.name}${optText} (${item.quantity} x Rs.${p})%0A`;
-    });
+            cart.forEach(item => {
+                const optText = item.optionName ? ` [${item.optionName}]` : '';
+                const p = item.optionPrice ? item.optionPrice : item.price;
+                msg += `• ${item.name}${optText} (${item.quantity} x Rs.${p})%0A`;
+            });
 
-          msg += `%0A*Total: Rs. ${secureTotal}*`;
-          window.open(`https://wa.me/${siteData.wa}?text=${msg}`, '_blank');
+            msg += `%0A*Total: Rs. ${secureTotal}*`;
+            window.open(`https://wa.me/${window.siteData.wa}?text=${msg}`, '_blank');
         }
 
         function applyLogo() {
             const img = document.getElementById('logo-img');
             const icon = document.getElementById('logo-icon');
-            if(siteData.logo) {
-                img.src = siteData.logo;
+            if(window.siteData.logo) {
+                img.src = window.siteData.logo;
                 img.classList.remove('hidden');
                 icon.classList.add('hidden');
             } else {
@@ -1038,9 +1057,13 @@
                     opacity: Math.random() * 0.5 + 0.1
                 });
             }
-            var loaderActive = true;
+            
+            // PERFORMANCE OPTIMIZATION: Stop loop logic
+            var loaderActive = true; 
+            
             function animateParticles() {
-                if (!loaderActive) return;
+                if (!loaderActive) return; // Completely stops CPU usage when loader is done
+                
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
                 particles.forEach(function(p) {
                     p.x += p.speedX; p.y += p.speedY;
@@ -1069,12 +1092,13 @@
                 requestAnimationFrame(animateParticles);
             }
             animateParticles();
+            
             window.addEventListener('load', function() {
                 document.body.classList.add('loaded');
                 setTimeout(function() {
                     var loader = document.getElementById('page-loader');
                     if (loader) loader.classList.add('hide');
-                    setTimeout(function() { loaderActive = false; }, 1000);
+                    setTimeout(function() { loaderActive = false; }, 1000); // Kills the animation request loop
                 }, 2200);
             });
         })();
