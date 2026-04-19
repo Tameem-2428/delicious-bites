@@ -402,8 +402,9 @@
             .menu-card-img-container { height: 10rem; }
             .menu-card-img-container img { width: 100%; height: 100%; object-fit: cover; }
             #menu { px: 4; }
-            #menu-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 12px !important; }
-            #menu-grid > div { border-radius: 1.5rem !important; padding: 8px !important; }
+            #menu-grid { grid-template-columns: repeat(6, 85vw) !important; gap: 16px !important; overflow-x: auto; scroll-snap-type: x mandatory; -ms-overflow-style: none; scrollbar-width: none; }
+            #menu-grid::-webkit-scrollbar { display: none; }
+            #menu-grid > div { border-radius: 1.5rem !important; padding: 12px !important; scroll-snap-align: center; width: 100%; }
             #menu-grid > div h4 { font-size: 13px !important; }
             #menu-grid > div .text-xl { font-size: 15px !important; }
             header .hero-parallax-content { padding: 1.5rem !important; }
