@@ -4,27 +4,71 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>BITE BURST | Live Store</title>
+    
+    <meta property="og:title" content="BITE BURST | Premium Dining">
+    <meta property="og:description" content="Order the best food directly via WhatsApp.">
+    <meta property="og:image" content="https://images.unsplash.com/photo-1601050690597-df056fb0179a?w=1200">
+    <meta property="og:type" content="website">
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-auth-compat.js"></script>
     <style>
+    :root {
+        --bg-main: #0b0b0b;
+        --accent: #d4a853;
+        --text-main: #ffffff;
+        --text-sub: #a8a29e;
+        --bg-card: rgba(255,255,255,0.07);
+        --text-dish: var(--accent);
+    }
+
+    /* Apply variables to the site */
+    body { 
+        background: var(--bg-main) !important; 
+        color: var(--text-main) !important; 
+    }
+
+    .text-\[\#d4a853\], .fas, .price-tag, #cart-total { 
+        color: var(--accent) !important; 
+    }
+
+    .bg-\[\#d4a853\], .order-btn, .magnetic-btn:hover { 
+        background: var(--accent) !important; 
+    }
+
+    .border-\[\#d4a853\] { 
+        border-color: var(--accent) !important; 
+    }
+
+    .theme-button {
+        background: var(--accent) !important;
+        transition: all 0.3s ease;
+    }
+
+    .theme-button:hover {
+        opacity: 0.9;
+        transform: scale(1.02);
+    }
+
+    .menu-card, .category-btn, .bg-\[\#1a1a1a\], .bg-\[\#111\] {
+        background: var(--bg-card) !important;
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255,255,255,0.1);
+    }
+
         @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@1,800&family=Nunito:wght@400;600;700;800;900&display=swap');
         body { font-family: 'Nunito', sans-serif; background: #0d0d0d; scroll-behavior: smooth; -webkit-tap-highlight-color: transparent; color: #e8e4dd; }
         .hero-title { font-family: 'Playfair Display', serif; font-style: italic; font-weight: 800; }
         
-        .admin-only { display: none !important; }
-        body.admin-mode .admin-only { display: flex !important; }
-        body.admin-mode [contenteditable="true"] { outline: 2px dashed #d4a853; outline-offset: 4px; background: rgba(212, 168, 83, 0.08); }
-        
         .menu-card-img-container { position: relative; overflow: hidden; border-radius: 1.5rem; height: 14rem; background: #1a1a1a; }
-        .admin-image-overlay { display: none; position: absolute; inset: 0; background: rgba(0,0,0,0.4); align-items: center; justify-content: center; color: white; font-weight: 900; font-size: 10px; text-transform: uppercase; cursor: pointer; z-index: 10; }
-        body.admin-mode .admin-image-overlay { display: flex; }
         
         #cart-sidebar { transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1); transform: translateX(100%); z-index: 100; }
         #cart-sidebar.open { transform: translateX(0); }
         
-        .cat-tab.active { background: linear-gradient(135deg, #d4a853, #c49638); color: #0d0d0d; border-color: #d4a853; }
+        .cat-tab.active { background: var(--accent) !important; color: #0d0d0d; border-color: var(--accent); }
         header { position: relative; overflow: hidden; }
         .slide { position: absolute; inset: 0; background-size: cover; background-position: center; opacity: 0; transition: opacity 1.5s ease-in-out; }
         .slide.active { opacity: 1; }
@@ -199,6 +243,7 @@
         .cat-tab {
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
             position: relative; overflow: hidden;
+            flex-shrink: 0;
         }
         .cat-tab:hover:not(.active) {
             background: rgba(212, 168, 83, 0.12);
@@ -368,16 +413,11 @@
             * { max-width: 100vw; }
             img, video { max-width: 100%; height: auto; }
         }
+        
+        /* ========== HIDE SCROLLBAR FOR CATEGORIES ========== */
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
-  <meta property="og:title" content="DELICIOUS BITES | Live Store">
-  <meta name="twitter:title" content="DELICIOUS BITES | Live Store">
-  <meta name="description" content="Lovable Generated Project">
-  <meta property="og:description" content="Lovable Generated Project">
-  <meta name="twitter:description" content="Lovable Generated Project">
-  <meta property="og:image" content="https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/2510751e-0504-4837-876a-cd4b2f068119/id-preview-87e786b5--b9a8cbad-c57e-40e7-be13-7bccd39f0aa0.lovable.app-1775139414449.png">
-  <meta name="twitter:image" content="https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/2510751e-0504-4837-876a-cd4b2f068119/id-preview-87e786b5--b9a8cbad-c57e-40e7-be13-7bccd39f0aa0.lovable.app-1775139414449.png">
-  <meta name="twitter:card" content="summary_large_image">
-  <meta property="og:type" content="website">
 </head>
 <body class="overflow-x-hidden">
     <div id="page-loader">
@@ -388,54 +428,50 @@
     </div>
     <div class="cursor-dot"></div>
     <div class="cursor-ring"></div>
-    <div class="admin-only fixed top-0 left-0 w-full bg-orange-600 text-white z-[110] p-3 shadow-xl text-center">
-        <div class="max-w-7xl mx-auto flex flex-wrap justify-center items-center gap-4 text-xs font-bold uppercase">
-            WA (91): <input type="text" id="wa-input" class="bg-orange-700 px-2 py-1 rounded outline-none w-28">
-            QR URL: <input type="text" id="qr-input" class="bg-orange-700 px-2 py-1 rounded outline-none w-28 text-black">
-            <div class="flex items-center gap-2 bg-orange-700 px-3 py-1 rounded">
-                CAT: 
-                <select id="new-item-cat" class="bg-transparent outline-none font-black cursor-pointer">
-                    </select>
-            </div>
-            <button onclick="manageCats()" class="bg-pink-600 px-4 py-1 rounded-full shadow-lg">Manage Cats</button>
-            <button onclick="addSlide()" class="bg-blue-600 px-4 py-1 rounded-full shadow-lg">+ Slide</button>
-            <button onclick="manageSlides()" class="bg-indigo-600 px-4 py-1 rounded-full shadow-lg">Edit Slides</button>
-            <button onclick="publishToCloud()" class="bg-black px-4 py-1 rounded-full shadow-lg">Save Changes</button>
-            <button onclick="toggleAdmin()" class="opacity-70">Exit</button>
-        </div>
-    </div>
+    
     <nav class="fixed top-0 w-full z-40 bg-black/70 backdrop-blur-xl px-6 py-4 flex justify-between items-center border-b border-[#d4a853]/10">
         <div class="flex items-center gap-2">
-            <div id="admin-trigger" ondblclick="checkAdminPin()" class="relative w-10 h-10 bg-transparent rounded-xl flex items-center justify-center text-black cursor-pointer magnetic-btn overflow-hidden">
-    <i id="logo-icon" class="fas fa-utensils text-[#d4a853]"></i> <img id="logo-img" src="" class="hidden absolute inset-0 w-full h-full object-cover">
-    <div onclick="changeLogoImg()" class="admin-image-overlay" style="font-size: 7px;">Edit</div>
-</div>
-            <h1 id="site-title" class="edit-text text-xl font-black italic text-[#f5e6c8]">BITE BURST</h1>
+            <div class="relative w-10 h-10 bg-transparent rounded-xl flex items-center justify-center text-black overflow-hidden">
+                <i id="logo-icon" class="fas fa-utensils text-[#d4a853]"></i> <img id="logo-img" src="" class="hidden absolute inset-0 w-full h-full object-cover">
+            </div>
+            <h1 id="site-title" class="text-xl font-black italic text-[#f5e6c8]">BITE BURST</h1>
         </div>
-        <button onclick="toggleCart()" class="hidden md:flex bg-gradient-to-r from-[#d4a853] to-[#c49638] text-black px-6 py-2.5 rounded-full font-bold text-sm items-center gap-2 magnetic-btn">
+        <button onclick="toggleCart()" class="hidden md:flex theme-button text-black px-6 py-2.5 rounded-full font-bold text-sm items-center gap-2 magnetic-btn">
             <i class="fas fa-shopping-bag"></i> <span id="nav-cart-count">0</span>
         </button>
     </nav>
+    
     <header id="hero-slider" class="min-h-screen flex items-center pt-16">
         <div id="slides-container" class="absolute inset-0"></div>
         <div class="hero-overlay absolute inset-0 z-10"></div>
         <div class="relative z-20 p-8 lg:p-24 text-white hero-parallax-content">
-            <h2 id="hero-title" class="edit-text text-5xl md:text-8xl hero-title mb-6 leading-tight hero-stagger-1">Tasty <br> Memories.</h2>
-            <p id="hero-desc" class="edit-text text-[#a8a29e] font-medium mb-12 max-w-sm hero-stagger-2">Handcrafted snacks. Delivered to your door. <strong>Pre-booked orders only (Order 1 day before).</strong></p>
-            <div class="hero-stagger-3"><a href="#menu" class="bg-gradient-to-r from-[#d4a853] to-[#c49638] text-black px-10 py-4 rounded-2xl font-black inline-block shadow-xl magnetic-btn">Start Ordering</a></div>
+            <h2 id="hero-title" class="text-5xl md:text-8xl hero-title mb-6 leading-tight hero-stagger-1">Tasty <br> Memories.</h2>
+            <p id="hero-desc" class="text-[#a8a29e] font-medium mb-12 max-w-sm hero-stagger-2">Handcrafted snacks. Delivered to your door. <strong>Pre-booked orders only (Order 1 day before).</strong></p>
+            <div class="hero-stagger-3"><a href="#menu" class="theme-button text-black px-10 py-4 rounded-2xl font-black inline-block shadow-xl magnetic-btn">Start Ordering</a></div>
         </div>
     </header>
+    
     <section id="menu" class="max-w-7xl mx-auto px-6 py-24 pb-40">
         <div class="flex flex-col md:flex-row justify-between items-center gap-6 mb-16 reveal">
             <h3 class="text-4xl md:text-5xl font-black italic">Menu</h3>
-            <div id="cat-nav" class="flex bg-[#1a1a1a] p-1.5 rounded-2xl gap-1 overflow-x-auto max-w-full border border-[#2a2a2a]">
-                </div>
-            <button onclick="addNewDish()" class="admin-only bg-green-600 text-white px-6 py-2 rounded-xl font-bold shadow-lg">+ Add Item</button>
+            
+            <div class="relative flex-1 flex items-center min-w-0 max-w-full overflow-hidden rounded-2xl border border-[#2a2a2a] bg-[#1a1a1a]">
+                <button id="cat-scroll-left" class="hidden absolute left-0 z-10 h-full px-4 bg-gradient-to-r from-[#1a1a1a] via-[#1a1a1a]/90 to-transparent text-[#d4a853] hover:text-white transition-colors cursor-pointer" onmousedown="startScroll(-8)" onmouseup="stopScroll()" onmouseleave="stopScroll()" ontouchstart="startScroll(-8)" ontouchend="stopScroll()">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+                
+                <div id="cat-nav" class="flex p-1.5 gap-1 overflow-x-auto w-full hide-scrollbar scroll-smooth relative"></div>
+                
+                <button id="cat-scroll-right" class="hidden absolute right-0 z-10 h-full px-4 bg-gradient-to-l from-[#1a1a1a] via-[#1a1a1a]/90 to-transparent text-[#d4a853] hover:text-white transition-colors cursor-pointer" onmousedown="startScroll(8)" onmouseup="stopScroll()" onmouseleave="stopScroll()" ontouchstart="startScroll(8)" ontouchend="stopScroll()">
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+            </div>
         </div>
         <div id="menu-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"></div>
     </section>
+    
     <div id="mobile-cart-bar" class="fixed bottom-6 left-6 right-6 z-50 md:bottom-8 md:left-auto md:right-8 md:w-80">
-        <button onclick="toggleCart()" class="w-full bg-gradient-to-r from-[#d4a853] to-[#c49638] text-black p-4 rounded-2xl shadow-2xl flex justify-between items-center transition-colors">
+        <button onclick="toggleCart()" class="w-full theme-button text-black p-4 rounded-2xl shadow-2xl flex justify-between items-center transition-colors">
             <div class="flex items-center gap-3">
                 <span id="mobile-cart-count" class="bg-black/20 w-8 h-8 flex items-center justify-center rounded-lg font-black text-sm">0</span>
                 <span class="font-bold text-sm tracking-tight">View your cart</span>
@@ -443,6 +479,7 @@
             <span class="font-black text-lg">&#8377;<span id="mobile-cart-total">0</span> <i class="fas fa-chevron-right ml-2 text-xs opacity-50"></i></span>
         </button>
     </div>
+    
     <div id="cart-sidebar" class="fixed top-0 right-0 h-full w-full max-w-md bg-[#141414] shadow-2xl flex flex-col border-l border-[#2a2a2a]">
         <div class="p-6 border-b border-[#2a2a2a] flex justify-between items-center bg-[#141414] sticky top-0 z-10">
             <h4 class="text-2xl font-black italic text-[#f5e6c8]">Your Order</h4>
@@ -452,17 +489,11 @@
             <div id="cart-items" class="space-y-4"></div>
             <div class="space-y-3 pt-4">
                 <input type="text" id="cust-name" placeholder="Full Name" class="w-full p-4 rounded-xl bg-[#1a1a1a] font-bold text-sm outline-none border-2 border-[#2a2a2a] focus:border-[#d4a853] text-[#e8e4dd] placeholder-[#555]">
+                
+                <input type="tel" id="cust-phone" placeholder="Phone Number (10 Digits)" class="w-full p-4 rounded-xl bg-[#1a1a1a] font-bold text-sm outline-none border-2 border-[#2a2a2a] focus:border-[#d4a853] text-[#e8e4dd] placeholder-[#555]">
+                
                 <textarea id="cust-addr" placeholder="Full Delivery Address" class="w-full p-4 rounded-xl bg-[#1a1a1a] font-bold text-sm h-24 outline-none border-2 border-[#2a2a2a] focus:border-[#d4a853] text-[#e8e4dd] placeholder-[#555]"></textarea>
                 
-                <div class="bg-[#1a1a1a] p-4 rounded-xl border border-[#2a2a2a]">
-                    <p class="text-[10px] font-black uppercase text-[#777] mb-2 italic">Select Delivery Day</p>
-                    <input type="date" id="delivery-date" class="w-full bg-transparent font-bold text-sm outline-none text-[#e8e4dd]" onchange="validateDeliveryDate(this)">
-                </div>
-                <div id="date-error-bar" class="hidden bg-red-900/30 border-l-4 border-red-500 p-3 rounded-lg">
-                    <p class="text-[11px] font-bold text-red-400 uppercase leading-tight">
-                        <i class="fas fa-exclamation-circle mr-1"></i> Only pre-booked orders accepted (Order at least 1 day before).
-                    </p>
-                </div>
                 <div class="flex gap-2 p-1 bg-[#1a1a1a] rounded-xl border border-[#2a2a2a]">
                     <button id="pay-cod" onclick="setPayment('COD')" class="flex-1 py-3 rounded-lg font-black text-[10px] uppercase bg-[#222] shadow-sm text-[#d4a853]">COD</button>
                     <button id="pay-online" onclick="setPayment('PREPAID')" class="flex-1 py-3 rounded-lg font-black text-[10px] uppercase text-[#666]">Prepaid</button>
@@ -477,100 +508,232 @@
             <div class="flex justify-between items-center mb-6">
                 <span class="font-bold text-[#777] text-xs uppercase tracking-widest">Grand Total</span>
                 <span class="text-3xl font-black text-[#d4a853] italic price-tag">
-                    &#8377;<span id="cart-total" class="edit-text">0</span>
+                    &#8377;<span id="cart-total">0</span>
                 </span>
             </div>
-            <button onclick="sendOrder()" class="order-btn w-full bg-gradient-to-r from-green-600 to-green-700 text-white py-5 rounded-2xl font-black text-lg shadow-lg active:scale-95 transition-transform">PLACE ORDER VIA WHATSAPP</button>
+            <button onclick="sendOrder()" class="order-btn w-full theme-button text-white py-5 rounded-2xl font-black text-lg shadow-lg active:scale-95 transition-transform">PLACE ORDER VIA WHATSAPP</button>
         </div>
     </div>
+
+    <div id="multi-modal" class="fixed inset-0 z-[200] hidden flex items-center justify-center bg-black/80 backdrop-blur-sm">
+        <div class="bg-[#1a1a1a] border border-[#333] p-6 rounded-[2.5rem] w-[90%] max-w-sm shadow-2xl relative">
+            <button onclick="closeMultiModal()" class="absolute top-5 right-6 text-[#777] hover:text-white font-black text-2xl transition-colors">&times;</button>
+            <h4 id="multi-modal-title" class="text-2xl font-black italic text-[#f5e6c8] mb-6 text-center pr-4">Select Options</h4>
+            <div id="multi-modal-options" class="space-y-3 mb-6 max-h-[50vh] overflow-y-auto pr-2">
+            </div>
+            <button onclick="saveMultiSelection()" class="w-full py-4 rounded-xl font-black text-lg theme-button text-black shadow-lg">Done</button>
+        </div>
+    </div>
+
+    <div id="closed-overlay" class="fixed inset-0 z-[150] hidden flex-col items-center justify-center bg-black/60 backdrop-blur-md pointer-events-auto transition-opacity duration-500" style="opacity: 1;">
+        <div class="bg-[#1a1a1a] border border-red-500/30 p-8 rounded-[2.5rem] shadow-2xl text-center max-w-sm mx-4 transform transition-transform">
+            <h2 class="text-3xl font-black italic text-[#f5e6c8] mb-2">Currently Closed</h2>
+            <p class="text-[#a8a29e] font-bold text-sm mb-6">We are not accepting orders at this time. You can still browse our menu!</p>
+            <button onclick="document.getElementById('closed-overlay').style.pointerEvents='none'; document.getElementById('closed-overlay').style.opacity='0';" class="w-full py-4 rounded-xl font-black text-lg bg-[#222] text-white shadow-lg border border-[#333]">View Menu</button>
+        </div>
+    </div>
+
     <script>
         const firebaseConfig = {
-            apiKey: "AIzaSyAnhMKWxrGBDgLpLw42LIAvgj7neFhaO7g",
-            databaseURL: "https://delisious-bites-default-rtdb.firebaseio.com/",
-            projectId: "delisious-bites",
-            appId: "1:502060863330:web:265ed82af0aed3d772263b"
+            apiKey: "AIzaSyB99VHhvReaIJ2wZo09cspmJldCtaBbGeg",
+            authDomain: "client2-ac52d.firebaseapp.com",
+            databaseURL: "https://client2-ac52d-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "client2-ac52d",
+            storageBucket: "client2-ac52d.firebasestorage.app",
+            messagingSenderId: "37110712493",
+            appId: "1:37110712493:web:24752e5bc8ae53cdae9e24",
+            measurementId: "G-WGD5TT4EHH"
         };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
         let siteData = { 
             wa: "9100000000", 
             qr: "", 
-            title: "DELICIOUS BITES", 
+            title: "BITE BURST", 
             menu: [], 
-            categories: ["veg", "nonveg", "dessert"], // New storage for categories
+            categories: ["veg", "nonveg", "dessert"], 
             heroTitle: "Tasty Memories.", 
             heroDesc: "Handcrafted snacks.", 
             slides: ["https://images.unsplash.com/photo-1601050690597-df056fb0179a?w=1200"] 
         };
-        let cart = [];
+        
+        let cart = JSON.parse(localStorage.getItem('biteBurstCart')) || [];
         let currentFilter = 'all';
         let slideIndex = 0;
         let paymentMethod = 'COD';
-        const tomorrow = new Date();
-        tomorrow.setDate(tomorrow.getDate() + 1);
-        const tomorrowStr = tomorrow.toISOString().split('T')[0];
-        document.getElementById('delivery-date').value = tomorrowStr;
-        function validateDeliveryDate(input) {
-            const selectedDate = new Date(input.value);
-            selectedDate.setHours(0,0,0,0);
-            const today = new Date();
-            today.setHours(0,0,0,0);
-            const errorBar = document.getElementById('date-error-bar');
-            if (selectedDate <= today) {
-                errorBar.classList.remove('hidden');
-            } else {
-                errorBar.classList.add('hidden');
-            }
+
+        let currentMultiIndex = -1;
+        let tempMultiQty = {};
+
+        // ========== CATEGORY SCROLL LOGIC ==========
+        let scrollInterval;
+        function startScroll(amount) {
+            const nav = document.getElementById('cat-nav');
+            if(!nav) return;
+            stopScroll();
+            scrollInterval = setInterval(() => {
+                nav.scrollBy({ left: amount, behavior: 'auto' });
+            }, 16);
         }
+        function stopScroll() {
+            clearInterval(scrollInterval);
+        }
+        function updateCatArrows() {
+            const nav = document.getElementById('cat-nav');
+            const leftBtn = document.getElementById('cat-scroll-left');
+            const rightBtn = document.getElementById('cat-scroll-right');
+            if(!nav || !leftBtn || !rightBtn) return;
+            
+            const isOverflowing = nav.scrollWidth > (nav.clientWidth + 2);
+
+            leftBtn.classList.toggle('hidden', nav.scrollLeft <= 0);
+            rightBtn.classList.toggle('hidden', !isOverflowing || (Math.ceil(nav.scrollLeft + nav.clientWidth) >= nav.scrollWidth - 2));
+        }
+        document.addEventListener('DOMContentLoaded', () => {
+            const nav = document.getElementById('cat-nav');
+            if(nav) nav.addEventListener('scroll', updateCatArrows);
+            window.addEventListener('resize', updateCatArrows);
+        });
+        // ===========================================
+
         db.ref('siteData').on('value', (snap) => {
             if (snap.exists()) { 
                 siteData = snap.val(); 
                 if(!siteData.menu) siteData.menu = [];
                 if(!siteData.slides) siteData.slides = ["https://images.unsplash.com/photo-1601050690597-df056fb0179a?w=1200"];
                 if(!siteData.categories) siteData.categories = ["veg", "nonveg", "dessert"];
+                
+                // Phase 2: Initialize Schedule & Override logic Defaults
+                if(siteData.manualClose === undefined) siteData.manualClose = false;
+                if(!siteData.schedule) siteData.schedule = {};
+                
+                // Automatic Stock Reset Logic
+                let stockChanged = false;
+                const now = new Date();
+                const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
+                const istDate = new Date(utc + (3600000 * 5.5));
+                const todayStr = istDate.toISOString().split('T')[0];
+
+                siteData.menu.forEach(item => {
+                    if (item.lastUpdated !== todayStr) {
+                        item.stockStatus = true;
+                        item.lastUpdated = todayStr;
+                        stockChanged = true;
+                    } else if (item.stockStatus === undefined) {
+                        item.stockStatus = true;
+                        item.lastUpdated = todayStr;
+                        stockChanged = true;
+                    }
+                });
+
+                if (stockChanged) {
+                    db.ref('siteData/menu').set(siteData.menu);
+                }
+
                 applyDataToScreen(); 
+                applyTheme();
             }
         });
+
+        // Phase 2: Store Operational Logic synced to IST
+      function isStoreOpen() {
+            if (siteData.manualClose) return false;
+            const now = new Date();
+            const days = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
+            
+            const todayStr = days[now.getDay()];
+            const yesterdayStr = days[(now.getDay() + 6) % 7];
+            
+            const curMin = (now.getHours() * 60) + now.getMinutes();
+
+            // 1. Check Today's Schedule
+            const s = siteData.schedule[todayStr];
+            if (s && !s.isClosed) {
+                const [oH, oM] = s.open.split(':').map(Number);
+                const [cH, cM] = s.close.split(':').map(Number);
+                const o = oH * 60 + oM;
+                let c = cH * 60 + cM;
+                if (c === 0) c = 1440; // Treat 00:00 as end of day
+                
+                if (o < c && curMin >= o && curMin <= c) return true;
+                if (o > c && curMin >= o) return true; // Shift starts today, ends tomorrow
+            }
+
+            // 2. Check Yesterday's Schedule (to see if an overnight shift is still active)
+            const y = siteData.schedule[yesterdayStr];
+            if (y && !y.isClosed) {
+                const [oH, oM] = y.open.split(':').map(Number);
+                const [cH, cM] = y.close.split(':').map(Number);
+                const o = oH * 60 + oM;
+                const c = cH * 60 + cM;
+                if (o > c && curMin <= c) return true; // We are in the "after midnight" part
+            }
+
+            return false;
+        }
+
+        function applyTheme() {
+            const bg = siteData.themeBg || "#0d0d0d";
+            const acc = siteData.themeAccent || "#d4a853";
+            
+            // Smart Contrast Logic
+            const r = parseInt(bg.slice(1,3), 16), g = parseInt(bg.slice(3,5), 16), b = parseInt(bg.slice(5,7), 16);
+            const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+            const textColor = brightness > 125 ? "#111111" : "#e8e4dd";
+            const subTextColor = brightness > 125 ? "#444444" : "#a8a29e";
+            const cardBg = brightness > 125 ? "rgba(0,0,0,0.05)" : "rgba(255,255,255,0.05)";
+
+            // Dynamic Golden Text Color for Dish Names
+            const accR = parseInt(acc.slice(1,3), 16), accG = parseInt(acc.slice(3,5), 16), accB = parseInt(acc.slice(5,7), 16);
+            const darkGold = `rgb(${Math.floor(accR * 0.5)}, ${Math.floor(accG * 0.5)}, ${Math.floor(accB * 0.5)})`;
+            const dishTextColor = brightness > 125 ? darkGold : acc;
+
+            document.documentElement.style.setProperty('--bg-main', bg);
+            document.documentElement.style.setProperty('--accent', acc);
+            document.documentElement.style.setProperty('--text-main', textColor);
+            document.documentElement.style.setProperty('--text-sub', subTextColor);
+            document.documentElement.style.setProperty('--bg-card', cardBg);
+            document.documentElement.style.setProperty('--text-dish', dishTextColor);
+    
+            document.body.style.backgroundColor = bg;
+            document.body.style.color = textColor;
+        }
+
         function applyDataToScreen() {
             document.getElementById('site-title').innerText = siteData.title;
             document.getElementById('hero-title').innerText = siteData.heroTitle;
             document.getElementById('hero-desc').innerHTML = siteData.heroDesc;
-            document.getElementById('wa-input').value = siteData.wa;
-            document.getElementById('qr-input').value = siteData.qr;
             document.getElementById('payment-qr').src = siteData.qr;
             applyLogo();
             renderCategories();
             renderSlides();
             renderMenu();
+            
+            updateCart();
+
+            // Phase 2: Manage the Glass Wall UI based on Store Open logic
+            const overlay = document.getElementById('closed-overlay');
+            if(!isStoreOpen() && overlay.style.pointerEvents !== 'none') {
+                overlay.classList.remove('hidden');
+                overlay.classList.add('flex');
+            } else {
+                overlay.classList.add('hidden');
+                overlay.classList.remove('flex');
+            }
         }
+
+        
         function renderCategories() {
             const nav = document.getElementById('cat-nav');
-            const select = document.getElementById('new-item-cat');
             nav.innerHTML = `<button onclick="filterCat('all')" id="cat-all" class="cat-tab ${currentFilter === 'all' ? 'active' : ''} px-5 py-2 rounded-xl font-bold text-[10px] uppercase whitespace-nowrap text-[#a8a29e]">All</button>`;
-            select.innerHTML = '';
             
             siteData.categories.forEach(cat => {
                 const label = cat.toUpperCase().replace('-', ' ');
                 nav.innerHTML += `<button onclick="filterCat('${cat}')" id="cat-${cat}" class="cat-tab ${currentFilter === cat ? 'active' : ''} px-5 py-2 rounded-xl font-bold text-[10px] uppercase whitespace-nowrap text-[#a8a29e]">${label}</button>`;
-                select.innerHTML += `<option value="${cat}" class="text-black">${label}</option>`;
             });
+            setTimeout(updateCatArrows, 100);
         }
-        function manageCats() {
-            let list = "Current Categories:\n";
-            siteData.categories.forEach((c, i) => list += `${i}: ${c}\n`);
-            const action = prompt(`${list}\nType 'add [name]' to add (e.g., add starters)\nType 'del [index]' to remove (e.g., del 0)`);
-            
-            if (action) {
-                if (action.startsWith('add ')) {
-                    const newCat = action.replace('add ', '').trim().toLowerCase().replace(/\s+/g, '-');
-                    if(newCat && !siteData.categories.includes(newCat)) siteData.categories.push(newCat);
-                } else if (action.startsWith('del ')) {
-                    const idx = parseInt(action.replace('del ', ''));
-                    if (siteData.categories.length > 1) siteData.categories.splice(idx, 1);
-                }
-                renderCategories();
-            }
-        }
+
         function setPayment(m) {
             paymentMethod = m;
             document.getElementById('pay-cod').className = m === 'COD' ? 'flex-1 py-3 rounded-lg font-black text-[10px] uppercase bg-[#222] shadow-sm text-[#d4a853]' : 'flex-1 py-3 rounded-lg font-black text-[10px] uppercase text-[#666]';
@@ -598,118 +761,127 @@
                 slides[slideIndex].classList.add('active');
             }, 5000);
         }
-        function addSlide() {
-            const url = prompt("Enter Image URL for new slide:");
-            if(url) { siteData.slides.push(url); renderSlides(); }
-        }
-        function manageSlides() {
-            let list = "Slides (d[index] to delete, [index] to change):\n";
-            siteData.slides.forEach((s, i) => list += `${i}: ${s.substring(0, 20)}...\n`);
-            const action = prompt(list);
-            if (action) {
-                if (action.startsWith('d')) {
-                    const idx = parseInt(action.substring(1));
-                    if (siteData.slides.length > 1) siteData.slides.splice(idx, 1);
-                } else {
-                    const idx = parseInt(action);
-                    const newUrl = prompt("New URL:", siteData.slides[idx]);
-                    if(newUrl) siteData.slides[idx] = newUrl;
-                }
-                renderSlides();
-            }
-        }
-        function checkAdminPin() { if(prompt("Admin PIN:") === "5566") toggleAdmin(); }
-        function toggleAdmin() {
-            const mode = document.body.classList.toggle('admin-mode');
-            document.querySelectorAll('.edit-text').forEach(el => el.contentEditable = mode);
-            renderMenu();
-        }
-        function publishToCloud() {
-            siteData.title = document.getElementById('site-title').innerText;
-            siteData.heroTitle = document.getElementById('hero-title').innerText;
-            siteData.heroDesc = document.getElementById('hero-desc').innerHTML;
-            siteData.wa = document.getElementById('wa-input').value;
-            siteData.qr = document.getElementById('qr-input').value;
-            db.ref('siteData').set(siteData).then(() => alert("Saved!"));
-        }
+
         function filterCat(cat) {
             currentFilter = cat;
             document.querySelectorAll('.cat-tab').forEach(btn => btn.classList.remove('active'));
             document.getElementById('cat-' + cat).classList.add('active');
             renderMenu();
         }
+        
         function renderMenu() {
             const grid = document.getElementById('menu-grid'); grid.innerHTML = '';
-            const isAdmin = document.body.classList.contains('admin-mode');
+            const storeOpen = isStoreOpen(); // Check status before rendering
+            if (!siteData.catColors) siteData.catColors = {};
+
             siteData.menu.forEach((item, i) => {
                 const itemCat = item.category || 'veg'; 
                 if(currentFilter !== 'all' && itemCat !== currentFilter) return;
                 
-                // Dynamic label color logic
-                let catColor = 'text-green-600';
-                if(itemCat === 'nonveg') catColor = 'text-red-600';
-                else if(itemCat === 'dessert') catColor = 'text-purple-600';
-                else if(itemCat === 'starters') catColor = 'text-orange-500';
-                else if(itemCat === 'gravy') catColor = 'text-yellow-600';
-                else catColor = 'text-blue-500';
-
+                const labelColor = siteData.catColors[itemCat] || "var(--accent)";
                 const catLabel = itemCat.toUpperCase().replace('-', ' ');
-                const cartItem = cart.find(c => c.originalIndex === i);
-                const quantity = cartItem ? cartItem.quantity : 0;
+                
+                const isOutOfStock = item.stockStatus === false;
+                const stockSubtext = isOutOfStock 
+                    ? `<p class="text-[10px] text-red-500 font-bold uppercase mt-1">Out of Stock</p>` 
+                    : `<p class="text-[10px] text-green-400 font-bold uppercase mt-1">In Stock</p>`;
+
+                const isMulti = item.isMulti === true;
+                let displayPrice = item.price;
+                if (isMulti && item.options && item.options.length > 0) {
+                    displayPrice = item.options[0].price;
+                }
+
+                let cardQtyHtml = '';
+                let priceHtml = '';
+
+                if (isMulti) {
+                    const totalQty = cart.filter(c => c.originalIndex === i).reduce((sum, c) => sum + c.quantity, 0);
+                    priceHtml = `<span class="text-[10px] text-[#777] uppercase mr-1 tracking-widest font-bold">From</span>&#8377;<span>${displayPrice}</span>`;
+                    
+                    if (!storeOpen) {
+                        cardQtyHtml = `<div class="absolute inset-0 bg-red-900/90 border border-red-500 text-red-200 font-bold rounded-lg flex items-center justify-center shadow-sm text-[10px] uppercase cursor-not-allowed">CLOSED</div>`;
+                    } else if (isOutOfStock) {
+                        cardQtyHtml = `<div class="absolute inset-0 bg-gray-800/90 border border-gray-600 text-gray-400 font-bold rounded-lg flex items-center justify-center shadow-sm text-[10px] uppercase cursor-not-allowed">OUT</div>`;
+                    } else {
+                        cardQtyHtml = `
+                            <button onclick="openMultiModal(${i})" class="${totalQty > 0 ? 'hidden' : 'flex'} absolute inset-0 bg-[var(--bg-main)] border border-[#333] text-[#d4a853] font-bold rounded-lg items-center justify-center shadow-sm text-[10px] uppercase magnetic-btn">Add</button>
+                            <div class="${totalQty > 0 ? 'flex' : 'hidden'} absolute inset-0 theme-button text-black rounded-lg items-center justify-center px-2 shadow-lg cursor-pointer" onclick="openMultiModal(${i})">
+                                <span class="font-bold text-[10px] uppercase tracking-wider text-center leading-tight">Edit<br>(${totalQty})</span>
+                            </div>
+                        `;
+                    }
+                } else {
+                    const cartItem = cart.find(c => c.originalIndex === i && !c.optionName);
+                    const quantity = cartItem ? cartItem.quantity : 0;
+                    priceHtml = `&#8377;<span>${displayPrice}</span>`;
+                    
+                    if (!storeOpen) {
+                        cardQtyHtml = `<div class="absolute inset-0 bg-red-900/90 border border-red-500 text-red-200 font-bold rounded-lg flex items-center justify-center shadow-sm text-[10px] uppercase cursor-not-allowed">CLOSED</div>`;
+                    } else if (isOutOfStock) {
+                        cardQtyHtml = `<div class="absolute inset-0 bg-gray-800/90 border border-gray-600 text-gray-400 font-bold rounded-lg flex items-center justify-center shadow-sm text-[10px] uppercase cursor-not-allowed">OUT</div>`;
+                    } else {
+                        cardQtyHtml = `
+                            <button onclick="handleInitialAdd(${i})" class="${quantity > 0 ? 'hidden' : 'flex'} absolute inset-0 bg-[var(--bg-main)] border border-[#333] text-[#d4a853] font-bold rounded-lg items-center justify-center shadow-sm text-[10px] uppercase magnetic-btn">Add</button>
+                            <div class="${quantity > 0 ? 'flex' : 'hidden'} absolute inset-0 theme-button text-black rounded-lg items-center justify-between px-2 shadow-lg">
+                                <button onclick="changeQty(${i}, -1)" class="w-6 h-6 flex items-center justify-center font-bold">-</button>
+                                <span class="font-bold text-xs">${quantity}</span>
+                                <button onclick="changeQty(${i}, 1)" class="w-6 h-6 flex items-center justify-center font-bold">+</button>
+                            </div>
+                        `;
+                    }
+                }
+
                 grid.innerHTML += `
-                    <div class="rounded-[2.5rem] p-4 relative text-left menu-card-glow" style="background: #181818; box-shadow: 8px 8px 20px #0a0a0a, -8px -8px 20px #252525; border: 1px solid #222;">
+                    <div class="menu-card rounded-[2.5rem] p-4 relative text-left menu-card-glow">
                         <div class="menu-card-img-container">
-                            <img src="${item.img}" class="w-full h-full object-cover">
-                            <div onclick="changeItemImg(${i})" class="admin-image-overlay">Replace Photo</div>
+                            <img src="${item.img}" class="w-full h-full object-cover" loading="lazy">
                         </div>
                         <div class="mt-5 px-2">
-                             <p class="text-[9px] font-black uppercase tracking-widest ${catColor} mb-1">${catLabel}</p>
-                             <h4 contenteditable="${isAdmin}" onblur="siteData.menu[${i}].name=this.innerText" class="text-lg font-black leading-tight text-[#f5e6c8]">${item.name}</h4>
+                            <p class="text-[9px] font-black uppercase tracking-widest mb-1" style="color: ${labelColor}">${catLabel}</p>
+                            <h4 class="text-lg font-black leading-tight" style="color: var(--text-dish);">${item.name}</h4>
+                            ${stockSubtext}
                         </div>
                         <div class="flex justify-between items-center mt-4 px-2">
-                            <span class="text-xl font-black text-[#d4a853] price-tag">&#8377;<span contenteditable="${isAdmin}" onblur="siteData.menu[${i}].price=this.innerText">${item.price.toString().replace('?', '').replace('?', '')}</span></span>
+                            <span class="text-xl font-black text-[#d4a853] price-tag flex items-baseline">${priceHtml}</span>
                             <div class="relative w-24 h-9">
-                                <button onclick="handleInitialAdd(${i})" class="${quantity > 0 ? 'hidden' : 'flex'} absolute inset-0 bg-[#222] border border-[#333] text-[#d4a853] font-bold rounded-lg items-center justify-center shadow-sm text-[10px] uppercase magnetic-btn">Add</button>
-                                <div class="${quantity > 0 ? 'flex' : 'hidden'} absolute inset-0 bg-gradient-to-r from-[#d4a853] to-[#c49638] text-black rounded-lg items-center justify-between px-2 shadow-lg">
-                                    <button onclick="changeQty(${i}, -1)" class="w-6 h-6 flex items-center justify-center font-bold">-</button>
-                                    <span class="font-bold text-xs">${quantity}</span>
-                                    <button onclick="changeQty(${i}, 1)" class="w-6 h-6 flex items-center justify-center font-bold">+</button>
-                                </div>
+                                ${cardQtyHtml}
                             </div>
                         </div>
-                        <button onclick="siteData.menu.splice(${i},1);renderMenu()" class="admin-only absolute -top-2 -right-2 bg-red-500 text-white w-8 h-8 rounded-full flex items-center justify-center font-bold">?</button>
                     </div>`;
             });
         }
+        
         function handleInitialAdd(index) {
             cart.push({ ...siteData.menu[index], quantity: 1, originalIndex: index });
-            var cards = document.querySelectorAll('#menu-grid > div');
-            cards.forEach(function(card, i) {
-                if (i === index || card.querySelector('[onclick*="handleInitialAdd(' + index + ')"]')) {
-                    card.classList.add('add-bounce');
-                    setTimeout(function() { card.classList.remove('add-bounce'); }, 500);
-                }
-            });
             updateCart(); renderMenu();
         }
         function changeQty(originalIndex, delta) {
-            const idx = cart.findIndex(c => c.originalIndex === originalIndex);
+            const idx = cart.findIndex(c => c.originalIndex === originalIndex && !c.optionName);
             if (idx > -1) {
                 cart[idx].quantity += delta;
                 if (cart[idx].quantity <= 0) cart.splice(idx, 1);
             }
             updateCart(); renderMenu();
         }
+        
         function updateCart() {
             const list = document.getElementById('cart-items'); 
             const mobileBar = document.getElementById('mobile-cart-bar');
             let total = 0, totalItems = 0; list.innerHTML = '';
-            
             cart.forEach((item, i) => {
-                const priceNum = parseInt(item.price.toString().replace(/[^0-9]/g, '')) || 0;
-                total += (priceNum * item.quantity); totalItems += item.quantity;
+                const priceNum = item.optionPrice ? item.optionPrice : (parseInt(item.price.toString().replace(/[^0-9]/g, '')) || 0);
+                total += (priceNum * item.quantity); 
+                totalItems += item.quantity;
+                
+                const subtext = item.optionName ? `<span class="text-[10px] text-[#d4a853] block mt-0.5 tracking-wide font-black">${item.optionName}</span>` : '';
+                
                 list.innerHTML += `<div class="flex justify-between items-center bg-[#1a1a1a] p-4 rounded-2xl border border-[#2a2a2a]">
-                    <div class="pr-2"><p class="font-bold text-xs uppercase text-[#f5e6c8]">${item.name}</p><p class="text-[10px] text-[#777] font-bold">${item.quantity} x &#8377;${item.price.toString().replace('?', '').replace('?', '')}</p></div>
+                    <div class="pr-2">
+                        <p class="font-bold text-xs uppercase text-[#f5e6c8]">${item.name}</p>
+                        ${subtext}
+                        <p class="text-[10px] text-[#777] font-bold mt-1">${item.quantity} x &#8377;${priceNum}</p>
+                    </div>
                     <button onclick="removeCompletely(${i})" class="text-red-400 font-black px-2 text-xl">&times;</button>
                 </div>`;
             });
@@ -717,47 +889,124 @@
             document.getElementById('mobile-cart-total').innerText = total;
             document.getElementById('nav-cart-count').innerText = totalItems;
             document.getElementById('mobile-cart-count').innerText = totalItems;
-            var countEls = [document.getElementById('nav-cart-count'), document.getElementById('mobile-cart-count')];
-            countEls.forEach(function(el) {
-                if (el) { el.classList.add('counter-pulse'); setTimeout(function() { el.classList.remove('counter-pulse'); }, 300); }
-            });
             if (totalItems > 0) mobileBar.classList.add('visible');
             else mobileBar.classList.remove('visible');
+            
+            localStorage.setItem('biteBurstCart', JSON.stringify(cart));
         }
+        
         function removeCompletely(idx) { cart.splice(idx, 1); updateCart(); renderMenu(); }
         function toggleCart() { document.getElementById('cart-sidebar').classList.toggle('open'); }
-        function addNewDish() { 
-            const cat = document.getElementById('new-item-cat').value;
-            siteData.menu.unshift({ name: "New Dish", price: "150", img: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400", category: cat }); 
-            renderMenu(); 
+        
+        function openMultiModal(index) {
+            currentMultiIndex = index;
+            const item = siteData.menu[index];
+            document.getElementById('multi-modal-title').innerText = item.name;
+            tempMultiQty = {};
+            
+            item.options.forEach((opt, optIndex) => {
+                const existing = cart.find(c => c.originalIndex === index && c.optionName === opt.name);
+                tempMultiQty[optIndex] = existing ? existing.quantity : 0;
+            });
+            
+            renderMultiModalOptions();
+            document.getElementById('multi-modal').classList.remove('hidden');
         }
+
+        function renderMultiModalOptions() {
+            const item = siteData.menu[currentMultiIndex];
+            const container = document.getElementById('multi-modal-options');
+            container.innerHTML = '';
+            item.options.forEach((opt, optIndex) => {
+                const qty = tempMultiQty[optIndex] || 0;
+                container.innerHTML += `
+                    <div class="flex justify-between items-center p-4 bg-[#222] rounded-xl border border-[#333]">
+                        <div>
+                            <p class="font-bold text-sm text-[#e8e4dd]">${opt.name}</p>
+                            <p class="text-xs font-black text-[#d4a853] mt-1">&#8377;${opt.price}</p>
+                        </div>
+                        <div class="flex items-center gap-3 bg-[#111] p-1.5 rounded-lg border border-[#333]">
+                            <button onclick="changeTempMultiQty(${optIndex}, -1)" class="w-8 h-8 rounded-md bg-[#222] text-white flex items-center justify-center font-bold active:scale-95 transition-transform">-</button>
+                            <span class="w-5 text-center font-bold text-sm text-white">${qty}</span>
+                            <button onclick="changeTempMultiQty(${optIndex}, 1)" class="w-8 h-8 rounded-md theme-button text-black flex items-center justify-center font-bold active:scale-95 transition-transform">+</button>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function changeTempMultiQty(optIndex, delta) {
+            if (!tempMultiQty[optIndex]) tempMultiQty[optIndex] = 0;
+            tempMultiQty[optIndex] += delta;
+            if (tempMultiQty[optIndex] < 0) tempMultiQty[optIndex] = 0;
+            renderMultiModalOptions();
+        }
+
+        function saveMultiSelection() {
+            const item = siteData.menu[currentMultiIndex];
+            
+            item.options.forEach((opt, optIndex) => {
+                const qty = tempMultiQty[optIndex] || 0;
+                const cartIdx = cart.findIndex(c => c.originalIndex === currentMultiIndex && c.optionName === opt.name);
+                
+                if (qty > 0) {
+                    if (cartIdx > -1) {
+                        cart[cartIdx].quantity = qty;
+                    } else {
+                        cart.push({
+                            ...item,
+                            quantity: qty,
+                            originalIndex: currentMultiIndex,
+                            optionName: opt.name,
+                            optionPrice: opt.price
+                        });
+                    }
+                } else {
+                    if (cartIdx > -1) {
+                        cart.splice(cartIdx, 1);
+                    }
+                }
+            });
+            
+            closeMultiModal();
+            updateCart();
+            renderMenu();
+        }
+
+        function closeMultiModal() {
+            document.getElementById('multi-modal').classList.add('hidden');
+        }
+
         function sendOrder() {
+        
             const name = document.getElementById('cust-name').value;
+            const phoneInput = document.getElementById('cust-phone').value;
+            const phone = phoneInput.replace(/\D/g, ''); // Extract only digits for validation
             const addr = document.getElementById('cust-addr').value;
-            const delDate = document.getElementById('delivery-date').value;
-            const grandTotal = document.getElementById('cart-total').innerText;
-            const selectedDate = new Date(delDate);
-            selectedDate.setHours(0,0,0,0);
-            const today = new Date();
-            today.setHours(0,0,0,0);
-            if (selectedDate <= today) {
-                document.getElementById('date-error-bar').classList.remove('hidden');
-                return alert("Only pre-booked orders accepted (Order at least 1 day before).");
-            }
-            if(!name || !addr || !delDate || !cart.length) return alert("Fill details!");
-            let msg = `*NEW ORDER*%0A*Name:* ${name}%0A*Address:* ${addr}%0A*Delivery Date:* ${delDate}%0A*Payment:* ${paymentMethod}%0A%0A*Items:*%0A`;
-            cart.forEach(item => msg += `?? ${item.name} (${item.quantity} x Rs.${item.price.toString().replace('?', '').replace('?', '')})%0A`);
-            msg += `%0A*Total: Rs. ${grandTotal}*`;
-            window.open(`https://wa.me/${siteData.wa}?text=${msg}`, '_blank');
+            
+            // Phase 2: Checkout Validation Logic
+            if(!isStoreOpen()) return alert("The store is currently closed! We are not accepting orders at this time.");
+            if(!name || !addr || !cart.length) return alert("Please fill in all details!");
+            if(phone.length !== 10) return alert("Please enter a valid 10-digit phone number!");
+    
+              let secureTotal = 0;
+             cart.forEach(item => {
+            const p = item.optionPrice ? item.optionPrice : (parseInt(item.price.toString().replace(/[^0-9]/g, '')) || 0);
+             secureTotal += (p * item.quantity);
+           });
+
+             let msg = `*NEW ORDER*%0A*Name:* ${name}%0A*Phone:* ${phoneInput}%0A*Address:* ${addr}%0A*Payment:* ${paymentMethod}%0A%0A*Items:*%0A`;
+    
+          cart.forEach(item => {
+          const optText = item.optionName ? ` [${item.optionName}]` : '';
+          const p = item.optionPrice ? item.optionPrice : item.price;
+          msg += `• ${item.name}${optText} (${item.quantity} x Rs.${p})%0A`;
+    });
+
+          msg += `%0A*Total: Rs. ${secureTotal}*`;
+          window.open(`https://wa.me/${siteData.wa}?text=${msg}`, '_blank');
         }
-        function changeItemImg(i) { const u = prompt("Img URL:"); if(u) { siteData.menu[i].img = u; renderMenu(); } }
-        function changeLogoImg() {
-            const u = prompt("Enter Logo Image URL:");
-            if(u !== null) { 
-                siteData.logo = u; 
-                applyLogo(); 
-            }
-        }
+
         function applyLogo() {
             const img = document.getElementById('logo-img');
             const icon = document.getElementById('logo-icon');
@@ -770,7 +1019,7 @@
                 icon.classList.remove('hidden');
             }
         }
-        /* ========== LOADER, CURSOR, TILT, PARALLAX SCRIPTS REMAIN UNCHANGED ========== */
+
         (function() {
             var canvas = document.getElementById('loader-particles');
             if (!canvas) return;
@@ -828,22 +1077,13 @@
                 }, 2200);
             });
         })();
+        
         (function() {
             if (window.matchMedia('(pointer: coarse)').matches) return;
             var dot = document.querySelector('.cursor-dot');
             var ring = document.querySelector('.cursor-ring');
             if (!dot || !ring) return;
             var mx = 0, my = 0, rx = 0, ry = 0;
-            var trails = [];
-            for (var i = 0; i < 6; i++) {
-                var trail = document.createElement('div');
-                trail.className = 'cursor-trail';
-                trail.style.opacity = (0.3 - i * 0.04);
-                trail.style.width = (4 - i * 0.5) + 'px';
-                trail.style.height = (4 - i * 0.5) + 'px';
-                document.body.appendChild(trail);
-                trails.push({ el: trail, x: 0, y: 0 });
-            }
             document.addEventListener('mousemove', function(e) {
                 mx = e.clientX; my = e.clientY;
                 dot.style.left = mx + 'px'; dot.style.top = my + 'px';
@@ -851,110 +1091,28 @@
             function animateRing() {
                 rx += (mx - rx) * 0.12; ry += (my - ry) * 0.12;
                 ring.style.left = rx + 'px'; ring.style.top = ry + 'px';
-                var prevX = mx, prevY = my;
-                trails.forEach(function(t, i) {
-                    var speed = 0.15 - i * 0.015;
-                    t.x += (prevX - t.x) * speed; t.y += (prevY - t.y) * speed;
-                    t.el.style.left = t.x + 'px'; t.el.style.top = t.y + 'px';
-                    prevX = t.x; prevY = t.y;
-                });
                 requestAnimationFrame(animateRing);
             }
             animateRing();
-            document.addEventListener('mouseenter', function() { dot.style.opacity = 1; ring.style.opacity = 1; });
-            document.addEventListener('mouseleave', function() { dot.style.opacity = 0; ring.style.opacity = 0; });
-            document.addEventListener('mouseover', function(e) {
-                if (e.target.closest('button, a, [onclick], input, select, [contenteditable]')) {
-                    ring.classList.add('hover');
-                    dot.style.transform = 'translate(-50%, -50%) scale(1.5)';
-                } else {
-                    ring.classList.remove('hover');
-                    dot.style.transform = 'translate(-50%, -50%) scale(1)';
-                }
-            });
         })();
+        
         (function() {
             var observer = new IntersectionObserver(function(entries) {
                 entries.forEach(function(entry) { if (entry.isIntersecting) entry.target.classList.add('visible'); });
-            }, { threshold: 0.1, rootMargin: '0px 0px -60px 0px' });
+            }, { threshold: 0.1 });
             function observeReveals() {
-                document.querySelectorAll('.reveal, .reveal-scale').forEach(function(el) {
-                    if (!el.classList.contains('visible')) observer.observe(el);
-                });
+                document.querySelectorAll('.reveal, .reveal-scale').forEach(function(el) { observer.observe(el); });
             }
             observeReveals();
-            new MutationObserver(function() {
-                document.querySelectorAll('#menu-grid > div').forEach(function(card, i) {
-                    if (!card.classList.contains('reveal-scale') && !card.classList.contains('tilt-card')) {
-                        card.classList.add('reveal-scale', 'tilt-card', 'menu-card-glow');
-                        card.style.transitionDelay = (i * 0.1) + 's';
-                        observer.observe(card);
-                    }
-                });
-            }).observe(document.getElementById('menu-grid'), { childList: true });
         })();
-        (function() {
-            if (window.matchMedia('(pointer: coarse)').matches) return;
-            document.addEventListener('mousemove', function(e) {
-                var cards = document.querySelectorAll('.tilt-card');
-                cards.forEach(function(card) {
-                    var rect = card.getBoundingClientRect();
-                    var x = e.clientX - rect.left;
-                    var y = e.clientY - rect.top;
-                    if (x < 0 || y < 0 || x > rect.width || y > rect.height) {
-                        card.style.transform = 'perspective(600px) rotateX(0) rotateY(0) scale(1)';
-                        return;
-                    }
-                    var rotateY = ((x / rect.width) - 0.5) * 18;
-                    var rotateX = ((y / rect.height) - 0.5) * -18;
-                    card.style.transform = 'perspective(600px) rotateX(' + rotateX + 'deg) rotateY(' + rotateY + 'deg) scale(1.02)';
-                });
-            });
-            document.addEventListener('mouseleave', function() {
-                document.querySelectorAll('.tilt-card').forEach(function(card) {
-                    card.style.transform = 'perspective(600px) rotateX(0) rotateY(0) scale(1)';
-                });
-            });
-        })();
-        (function() {
-            var heroContent = document.querySelector('.hero-parallax-content');
-            window.addEventListener('scroll', function() {
-                var scrollY = window.pageYOffset;
-                if (scrollY < window.innerHeight) {
-                    var slides = document.querySelectorAll('.slide');
-                    slides.forEach(function(slide) { slide.style.transform = 'translateY(' + (scrollY * 0.35) + 'px) scale(' + (1 + scrollY * 0.0003) + ')'; });
-                    if (heroContent) {
-                        heroContent.style.transform = 'translateY(' + (scrollY * 0.2) + 'px)';
-                        heroContent.style.opacity = 1 - (scrollY / (window.innerHeight * 0.7));
-                    }
-                }
-            }, { passive: true });
-        })();
+        
         (function() {
             var nav = document.querySelector('nav');
             window.addEventListener('scroll', function() {
                 if (window.pageYOffset > 50) nav.classList.add('scrolled');
                 else nav.classList.remove('scrolled');
-            }, { passive: true });
-        })();
-        (function() {
-            if (window.matchMedia('(pointer: coarse)').matches) return;
-            document.querySelectorAll('.magnetic-btn').forEach(function(btn) {
-                btn.addEventListener('mousemove', function(e) {
-                    var rect = btn.getBoundingClientRect();
-                    var x = e.clientX - rect.left - rect.width / 2;
-                    var y = e.clientY - rect.top - rect.height / 2;
-                    btn.style.transform = 'translate(' + (x * 0.2) + 'px, ' + (y * 0.2) + 'px)';
-                });
-                btn.addEventListener('mouseleave', function() { btn.style.transform = 'translate(0, 0)'; });
             });
         })();
-        document.querySelectorAll('a[href^="#"]').forEach(function(a) {
-            a.addEventListener('click', function(e) {
-                var target = document.querySelector(this.getAttribute('href'));
-                if (target) { e.preventDefault(); target.scrollIntoView({ behavior: 'smooth' }); }
-            });
-        });
     </script>
 </body>
 </html>
