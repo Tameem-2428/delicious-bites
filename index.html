@@ -2,22 +2,19 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>BITE BURST | Live Store</title>
     
-    <meta name="description" content="Order the best handcrafted snacks and food directly via WhatsApp from BITE BURST.">
     <meta property="og:title" content="BITE BURST | Premium Dining">
     <meta property="og:description" content="Order the best food directly via WhatsApp.">
     <meta property="og:image" content="https://images.unsplash.com/photo-1601050690597-df056fb0179a?w=1200">
     <meta property="og:type" content="website">
     
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
-    <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"></noscript>
-    
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-auth-compat.js"></script>
     <style>
     :root {
         --bg-main: #0b0b0b;
@@ -28,6 +25,7 @@
         --text-dish: var(--accent);
     }
 
+    /* Apply variables to the site */
     body { 
         background: var(--bg-main) !important; 
         color: var(--text-main) !important; 
@@ -80,7 +78,6 @@
             transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
         #mobile-cart-bar.visible { transform: translateY(0); }
-        
         /* ========== CINEMATIC FULL-SCREEN LOADER ========== */
         #page-loader {
             position: fixed; inset: 0; z-index: 9999;
@@ -91,6 +88,7 @@
         }
         #page-loader.hide { opacity: 0; visibility: hidden; pointer-events: none; }
         
+        /* Particle canvas behind loader */
         #loader-particles {
             position: absolute; inset: 0; z-index: 0;
         }
@@ -114,7 +112,7 @@
         
         .loader-tagline {
             font-size: 11px; font-weight: 700; text-transform: uppercase;
-            letter-spacing: 8px; color: #777; position: relative; z-index: 1;
+            letter-spacing: 8px; color: #555; position: relative; z-index: 1;
             animation: fadeInUp 1s 0.5s both;
         }
         
@@ -137,19 +135,16 @@
             from { opacity: 0; transform: translateY(20px); }
             to { opacity: 1; transform: translateY(0); }
         }
-        
-        /* ========== LIGHTWEIGHT CUSTOM CURSOR ========== */
+        /* ========== ENHANCED CUSTOM CURSOR ========== */
         .cursor-dot, .cursor-ring {
             pointer-events: none; position: fixed; z-index: 99998;
-            top: 0; left: 0;
-            border-radius: 50%;
+            border-radius: 50%; transform: translate(-50%, -50%);
             mix-blend-mode: difference;
-            will-change: transform;
-            transform: translate3d(var(--cx, -100px), var(--cy, -100px), 0) translate(-50%, -50%);
         }
         .cursor-dot {
             width: 8px; height: 8px; 
             background: #d4a853;
+            transition: transform 0.15s cubic-bezier(0.22, 1, 0.36, 1);
             box-shadow: 0 0 10px rgba(212, 168, 83, 0.5);
         }
         .cursor-ring {
@@ -157,16 +152,23 @@
             border: 2px solid rgba(212, 168, 83, 0.4);
             transition: width 0.4s cubic-bezier(0.22, 1, 0.36, 1), 
                         height 0.4s cubic-bezier(0.22, 1, 0.36, 1), 
-                        border-color 0.3s ease, background 0.3s ease,
-                        transform 0.15s ease-out;
+                        border-color 0.3s ease,
+                        background 0.3s ease;
         }
         .cursor-ring.hover {
             width: 64px; height: 64px;
             border-color: #d4a853;
             background: rgba(212, 168, 83, 0.06);
         }
-        @media (pointer: coarse) { .cursor-dot, .cursor-ring { display: none !important; } }
-        
+        /* Cursor trail */
+        .cursor-trail {
+            pointer-events: none; position: fixed; z-index: 99997;
+            width: 4px; height: 4px; border-radius: 50%;
+            background: rgba(212, 168, 83, 0.3);
+            transform: translate(-50%, -50%);
+            transition: opacity 0.5s ease;
+        }
+        @media (pointer: coarse) { .cursor-dot, .cursor-ring, .cursor-trail { display: none !important; } }
         /* ========== ENHANCED SCROLL REVEAL ========== */
         .reveal {
             opacity: 0; transform: translateY(60px);
@@ -183,7 +185,6 @@
             transition: opacity 0.7s ease, transform 0.7s cubic-bezier(0.22, 1, 0.36, 1), filter 0.7s ease;
         }
         .reveal-scale.visible { opacity: 1; transform: scale(1) translateY(0); filter: blur(0); }
-        
         /* ========== ENHANCED 3D CARD TILT ========== */
         .tilt-card {
             transform-style: preserve-3d;
@@ -193,26 +194,24 @@
             box-shadow: 0 30px 80px -15px rgba(212, 168, 83, 0.25),
                         0 15px 30px -10px rgba(0,0,0,0.5);
         }
-        
         /* ========== ENHANCED IMAGE HOVER ========== */
         .menu-card-img-container img {
             transition: transform 0.7s cubic-bezier(0.22, 1, 0.36, 1), filter 0.7s ease;
         }
-        .tilt-card:hover .menu-card-img-container img, .menu-card:hover .menu-card-img-container img {
+        .tilt-card:hover .menu-card-img-container img {
             transform: scale(1.15) rotate(1deg);
             filter: brightness(1.1) saturate(1.2);
         }
+        /* Image overlay glow on hover */
         .menu-card-img-container::after {
             content: ''; position: absolute; inset: 0;
             background: radial-gradient(circle at center, rgba(212,168,83,0.15) 0%, transparent 70%);
             opacity: 0; transition: opacity 0.5s ease;
             pointer-events: none; border-radius: 1.5rem;
         }
-        .tilt-card:hover .menu-card-img-container::after, .menu-card:hover .menu-card-img-container::after { opacity: 1; }
-        
+        .tilt-card:hover .menu-card-img-container::after { opacity: 1; }
         /* ========== PARALLAX HERO ========== */
         #hero-slider { will-change: transform; }
-        
         /* ========== NAV SCROLL SHRINK ========== */
         nav {
             transition: background 0.4s ease, box-shadow 0.4s ease, padding 0.3s ease, backdrop-filter 0.4s ease !important;
@@ -222,7 +221,6 @@
             box-shadow: 0 4px 30px rgba(0,0,0,0.4), 0 1px 0 rgba(212,168,83,0.1);
             padding-top: 0.5rem !important; padding-bottom: 0.5rem !important;
         }
-        
         /* ========== ENHANCED HERO CTA SHINE ========== */
         header a[href="#menu"] {
             transition: transform 0.3s ease, box-shadow 0.3s ease;
@@ -241,7 +239,6 @@
             transform: translateX(100%);
             transition: transform 0.6s ease;
         }
-        
         /* ========== ENHANCED CATEGORY TAB MICRO-INTERACTIONS ========== */
         .cat-tab {
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
@@ -254,6 +251,7 @@
             box-shadow: 0 4px 15px rgba(212, 168, 83, 0.1);
         }
         .cat-tab:active { transform: scale(0.92) !important; }
+        /* Ripple on click */
         .cat-tab::after {
             content: ''; position: absolute; width: 100%; height: 100%;
             top: 0; left: 0; border-radius: inherit;
@@ -262,11 +260,9 @@
             transition: transform 0.5s ease, opacity 0.5s ease;
         }
         .cat-tab:active::after { transform: scale(2); opacity: 1; transition: 0s; }
-        
         /* ========== BUTTON PRESS EFFECTS ========== */
         nav button:hover { transform: scale(1.08); }
         nav button:active { transform: scale(0.9); }
-        
         /* ========== FLOATING MOBILE CART ========== */
         @keyframes floatGently {
             0%, 100% { transform: translateY(0) rotate(0deg); }
@@ -277,7 +273,6 @@
         #mobile-cart-bar.visible > button {
             animation: floatGently 4s ease-in-out infinite;
         }
-        
         /* ========== ENHANCED HERO STAGGER ========== */
         .hero-stagger-1 { animation: heroSlideUp 1s 0.5s both cubic-bezier(0.22, 1, 0.36, 1); }
         .hero-stagger-2 { animation: heroSlideUp 1s 0.8s both cubic-bezier(0.22, 1, 0.36, 1); }
@@ -286,18 +281,15 @@
             from { opacity: 0; transform: translateY(60px) scale(0.95); filter: blur(10px); }
             to { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
         }
-        
         /* ========== GRAIN TEXTURE ========== */
         #hero-slider::after {
             content: ''; position: absolute; inset: 0; z-index: 15;
             opacity: 0.04; pointer-events: none;
             background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
         }
-        
         /* ========== SMOOTH BODY REVEAL ========== */
         body { opacity: 0; transition: opacity 0.5s ease; }
         body.loaded { opacity: 1; }
-        
         /* ========== CART SIDEBAR BACKDROP ========== */
         #cart-sidebar::before {
             content: ''; position: fixed; inset: 0;
@@ -307,6 +299,7 @@
         #cart-sidebar.open::before {
             background: rgba(0,0,0,0.6);
         }
+        /* Menu title animation */
         #menu h3 {
             background: linear-gradient(135deg, #d4a853, #f5e6c8);
             -webkit-background-clip: text; -webkit-text-fill-color: transparent;
@@ -314,11 +307,11 @@
         }
         html { scroll-behavior: smooth; }
         #menu { scroll-margin-top: 80px; }
-        
+        /* ========== MAGNETIC BUTTON EFFECT ========== */
         .magnetic-btn {
             transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
         }
-        
+        /* ========== ADD-TO-CART BOUNCE ========== */
         @keyframes addBounce {
             0% { transform: scale(1); }
             25% { transform: scale(0.85); }
@@ -327,18 +320,18 @@
             100% { transform: scale(1); }
         }
         .add-bounce { animation: addBounce 0.5s cubic-bezier(0.22, 1, 0.36, 1); }
-        
+        /* ========== COUNTER PULSE ========== */
         @keyframes counterPulse {
             0%, 100% { transform: scale(1); }
             50% { transform: scale(1.3); }
         }
         .counter-pulse { animation: counterPulse 0.3s ease; }
-        
+        /* ========== SECTION PARALLAX LAYERS ========== */
         .parallax-layer {
             will-change: transform;
             transition: transform 0.1s linear;
         }
-        
+        /* ========== GLOW BORDER ON MENU CARDS ========== */
         .menu-card-glow {
             position: relative;
         }
@@ -359,7 +352,7 @@
             50% { background-position: 100% 100%; }
             100% { background-position: 0% 0%; }
         }
-        
+        /* ========== TEXT GRADIENT ANIMATION ON HERO ========== */
         .hero-title {
             background: linear-gradient(135deg, #ffffff 0%, #f5e6c8 30%, #d4a853 60%, #ffffff 100%);
             background-size: 300% 100%;
@@ -371,7 +364,7 @@
             0%, 100% { background-position: 0% 50%; }
             50% { background-position: 100% 50%; }
         }
-        
+        /* ========== SMOOTH SLIDE TRANSITION (Ken Burns) ========== */
         .slide.active {
             animation: kenBurns 8s ease-in-out forwards;
         }
@@ -379,11 +372,11 @@
             0% { transform: scale(1) translate(0, 0); }
             100% { transform: scale(1.08) translate(-1%, -1%); }
         }
-        
+        /* ========== PRICE TAG GLOW ========== */
         .price-tag {
             text-shadow: 0 0 20px rgba(212, 168, 83, 0.3);
         }
-        
+        /* ========== ORDER BUTTON GLOW ========== */
         .order-btn {
             position: relative; overflow: hidden;
         }
@@ -397,7 +390,7 @@
             0%, 70%, 100% { transform: translateX(-100%); }
             30%, 50% { transform: translateX(100%); }
         }
-        
+        /* ========== MOBILE FIXES ========== */
         @media (max-width: 768px) {
             header#hero-slider { min-height: 100svh; min-height: -webkit-fill-available; max-height: 100svh; }
             .slide { background-size: cover; background-position: center; }
@@ -409,21 +402,9 @@
             .menu-card-img-container { height: 10rem; }
             .menu-card-img-container img { width: 100%; height: 100%; object-fit: cover; }
             #menu { px: 4; }
-            
-            /* UPDATED MOBILE GRID FOR HORIZONTAL SCROLL */
-            #menu-grid { 
-                display: grid; 
-                grid-template-columns: repeat(10, 260px); 
-                grid-auto-flow: column; 
-                gap: 16px !important; 
-                overflow-x: auto; 
-                padding-bottom: 20px;
-                scrollbar-width: none; 
-            }
+            #menu-grid { grid-template-columns: repeat(6, 85vw) !important; gap: 16px !important; overflow-x: auto; scroll-snap-type: x mandatory; -ms-overflow-style: none; scrollbar-width: none; }
             #menu-grid::-webkit-scrollbar { display: none; }
-            /* END UPDATED MOBILE GRID */
-
-            #menu-grid > div { border-radius: 1.5rem !important; padding: 8px !important; }
+            #menu-grid > div { border-radius: 1.5rem !important; padding: 12px !important; scroll-snap-align: center; width: 100%; }
             #menu-grid > div h4 { font-size: 13px !important; }
             #menu-grid > div .text-xl { font-size: 15px !important; }
             header .hero-parallax-content { padding: 1.5rem !important; }
@@ -434,117 +415,114 @@
             img, video { max-width: 100%; height: auto; }
         }
         
+        /* ========== HIDE SCROLLBAR FOR CATEGORIES ========== */
         .hide-scrollbar::-webkit-scrollbar { display: none; }
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
 </head>
 <body class="overflow-x-hidden">
     <div id="page-loader">
-        <canvas id="loader-particles" aria-label="Loading animation particles"></canvas>
+        <canvas id="loader-particles"></canvas>
         <span class="loader-brand">BITE BURST</span>
         <span class="loader-tagline">Crafting Flavors</span>
         <div class="loader-progress"><div class="loader-progress-bar"></div></div>
     </div>
-    
     <div class="cursor-dot"></div>
     <div class="cursor-ring"></div>
     
-    <nav class="fixed top-0 w-full z-40 px-6 py-4 flex justify-between items-center border-b border-[#d4a853]/10">
+    <nav class="fixed top-0 w-full z-40 bg-black/70 backdrop-blur-xl px-6 py-4 flex justify-between items-center border-b border-[#d4a853]/10">
         <div class="flex items-center gap-2">
             <div class="relative w-10 h-10 bg-transparent rounded-xl flex items-center justify-center text-black overflow-hidden">
-                <i id="logo-icon" class="fas fa-utensils text-[#d4a853]" aria-hidden="true"></i> 
-                <img id="logo-img" src="" alt="Bite Burst Logo" class="hidden absolute inset-0 w-full h-full object-cover">
+                <i id="logo-icon" class="fas fa-utensils text-[#d4a853]"></i> <img id="logo-img" src="" class="hidden absolute inset-0 w-full h-full object-cover">
             </div>
             <h1 id="site-title" class="text-xl font-black italic text-[#f5e6c8]">BITE BURST</h1>
         </div>
-        <button aria-label="Open Cart" onclick="toggleCart()" class="hidden md:flex theme-button text-black px-6 py-2.5 rounded-full font-bold text-sm items-center gap-2 magnetic-btn">
-            <i class="fas fa-shopping-bag" aria-hidden="true"></i> <span id="nav-cart-count">0</span>
+        <button onclick="toggleCart()" class="hidden md:flex theme-button text-black px-6 py-2.5 rounded-full font-bold text-sm items-center gap-2 magnetic-btn">
+            <i class="fas fa-shopping-bag"></i> <span id="nav-cart-count">0</span>
         </button>
     </nav>
     
-    <main>
-        <header id="hero-slider" class="min-h-screen flex items-center pt-16">
-            <div id="slides-container" class="absolute inset-0"></div>
-            <div class="hero-overlay absolute inset-0 z-10"></div>
-            <div class="relative z-20 p-8 lg:p-24 text-white hero-parallax-content">
-                <h2 id="hero-title" class="text-5xl md:text-8xl hero-title mb-6 leading-tight hero-stagger-1">Tasty <br> Memories.</h2>
-                <p id="hero-desc" class="text-[#a8a29e] font-medium mb-12 max-w-sm hero-stagger-2">Handcrafted snacks. Delivered to your door. <strong>Pre-booked orders only (Order 1 day before).</strong></p>
-                <div class="hero-stagger-3"><a href="#menu" aria-label="Scroll to Menu" class="theme-button text-black px-10 py-4 rounded-2xl font-black inline-block shadow-xl magnetic-btn">Start Ordering</a></div>
-            </div>
-        </header>
-        
-        <section id="menu" class="max-w-7xl mx-auto px-6 py-24 pb-40">
-            <div class="flex flex-col md:flex-row justify-between items-center gap-6 mb-16 reveal">
-                <h3 class="text-4xl md:text-5xl font-black italic">Menu</h3>
+    <header id="hero-slider" class="min-h-screen flex items-center pt-16">
+        <div id="slides-container" class="absolute inset-0"></div>
+        <div class="hero-overlay absolute inset-0 z-10"></div>
+        <div class="relative z-20 p-8 lg:p-24 text-white hero-parallax-content">
+            <h2 id="hero-title" class="text-5xl md:text-8xl hero-title mb-6 leading-tight hero-stagger-1">Tasty <br> Memories.</h2>
+            <p id="hero-desc" class="text-[#a8a29e] font-medium mb-12 max-w-sm hero-stagger-2">Handcrafted snacks. Delivered to your door. <strong>Pre-booked orders only (Order 1 day before).</strong></p>
+            <div class="hero-stagger-3"><a href="#menu" class="theme-button text-black px-10 py-4 rounded-2xl font-black inline-block shadow-xl magnetic-btn">Start Ordering</a></div>
+        </div>
+    </header>
+    
+    <section id="menu" class="max-w-7xl mx-auto px-6 py-24 pb-40">
+        <div class="flex flex-col md:flex-row justify-between items-center gap-6 mb-16 reveal">
+            <h3 class="text-4xl md:text-5xl font-black italic">Menu</h3>
+            
+            <div class="relative flex-1 flex items-center min-w-0 max-w-full overflow-hidden rounded-2xl border border-[#2a2a2a] bg-[#1a1a1a]">
+                <button id="cat-scroll-left" class="hidden absolute left-0 z-10 h-full px-4 bg-gradient-to-r from-[#1a1a1a] via-[#1a1a1a]/90 to-transparent text-[#d4a853] hover:text-white transition-colors cursor-pointer" onmousedown="startScroll(-8)" onmouseup="stopScroll()" onmouseleave="stopScroll()" ontouchstart="startScroll(-8)" ontouchend="stopScroll()">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
                 
-                <div class="relative flex-1 flex items-center min-w-0 max-w-full overflow-hidden rounded-2xl border border-[#2a2a2a] bg-[#1a1a1a]">
-                    <button aria-label="Scroll Category Left" id="cat-scroll-left" class="hidden absolute left-0 z-10 h-full px-4 bg-gradient-to-r from-[#1a1a1a] via-[#1a1a1a]/90 to-transparent text-[#d4a853] hover:text-white transition-colors cursor-pointer" onmousedown="startScroll(-8)" onmouseup="stopScroll()" onmouseleave="stopScroll()" ontouchstart="startScroll(-8)" ontouchend="stopScroll()">
-                        <i class="fas fa-chevron-left" aria-hidden="true"></i>
-                    </button>
-                    
-                    <div id="cat-nav" class="flex p-1.5 gap-1 overflow-x-auto w-full hide-scrollbar scroll-smooth relative"></div>
-                    
-                    <button aria-label="Scroll Category Right" id="cat-scroll-right" class="hidden absolute right-0 z-10 h-full px-4 bg-gradient-to-l from-[#1a1a1a] via-[#1a1a1a]/90 to-transparent text-[#d4a853] hover:text-white transition-colors cursor-pointer" onmousedown="startScroll(8)" onmouseup="stopScroll()" onmouseleave="stopScroll()" ontouchstart="startScroll(8)" ontouchend="stopScroll()">
-                        <i class="fas fa-chevron-right" aria-hidden="true"></i>
-                    </button>
-                </div>
+                <div id="cat-nav" class="flex p-1.5 gap-1 overflow-x-auto w-full hide-scrollbar scroll-smooth relative"></div>
+                
+                <button id="cat-scroll-right" class="hidden absolute right-0 z-10 h-full px-4 bg-gradient-to-l from-[#1a1a1a] via-[#1a1a1a]/90 to-transparent text-[#d4a853] hover:text-white transition-colors cursor-pointer" onmousedown="startScroll(8)" onmouseup="stopScroll()" onmouseleave="stopScroll()" ontouchstart="startScroll(8)" ontouchend="stopScroll()">
+                    <i class="fas fa-chevron-right"></i>
+                </button>
             </div>
-            <div id="menu-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"></div>
-        </section>
-    </main>
-
+        </div>
+        <div id="menu-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"></div>
+    </section>
+    
     <div id="mobile-cart-bar" class="fixed bottom-6 left-6 right-6 z-50 md:bottom-8 md:left-auto md:right-8 md:w-80">
-        <button aria-label="Open Mobile Cart" onclick="toggleCart()" class="w-full theme-button text-black p-4 rounded-2xl shadow-2xl flex justify-between items-center transition-colors">
+        <button onclick="toggleCart()" class="w-full theme-button text-black p-4 rounded-2xl shadow-2xl flex justify-between items-center transition-colors">
             <div class="flex items-center gap-3">
                 <span id="mobile-cart-count" class="bg-black/20 w-8 h-8 flex items-center justify-center rounded-lg font-black text-sm">0</span>
                 <span class="font-bold text-sm tracking-tight">View your cart</span>
             </div>
-            <span class="font-black text-lg">&#8377;<span id="mobile-cart-total">0</span> <i class="fas fa-chevron-right ml-2 text-xs opacity-50" aria-hidden="true"></i></span>
+            <span class="font-black text-lg">&#8377;<span id="mobile-cart-total">0</span> <i class="fas fa-chevron-right ml-2 text-xs opacity-50"></i></span>
         </button>
     </div>
     
     <div id="cart-sidebar" class="fixed top-0 right-0 h-full w-full max-w-md bg-[#141414] shadow-2xl flex flex-col border-l border-[#2a2a2a]">
         <div class="p-6 border-b border-[#2a2a2a] flex justify-between items-center bg-[#141414] sticky top-0 z-10">
             <h4 class="text-2xl font-black italic text-[#f5e6c8]">Your Order</h4>
-            <button aria-label="Close Cart" onclick="toggleCart()" class="text-[#777] hover:text-[#fff] text-4xl leading-none">&times;</button>
+            <button onclick="toggleCart()" class="text-[#555] text-4xl leading-none">&times;</button>
         </div>
         <div class="flex-1 overflow-y-auto p-6 space-y-6">
             <div id="cart-items" class="space-y-4"></div>
             <div class="space-y-3 pt-4">
-                <input type="text" id="cust-name" aria-label="Full Name" placeholder="Full Name" class="w-full p-4 rounded-xl bg-[#1a1a1a] font-bold text-sm outline-none border-2 border-[#2a2a2a] focus:border-[#d4a853] text-[#e8e4dd] placeholder-[#777]">
+                <input type="text" id="cust-name" placeholder="Full Name" class="w-full p-4 rounded-xl bg-[#1a1a1a] font-bold text-sm outline-none border-2 border-[#2a2a2a] focus:border-[#d4a853] text-[#e8e4dd] placeholder-[#555]">
                 
-                <input type="tel" id="cust-phone" aria-label="Phone Number" placeholder="Enter Your Phone Number " class="w-full p-4 rounded-xl bg-[#1a1a1a] font-bold text-sm outline-none border-2 border-[#2a2a2a] focus:border-[#d4a853] text-[#e8e4dd] placeholder-[#777]">
+                <input type="tel" id="cust-phone" placeholder="Phone Number (10 Digits)" class="w-full p-4 rounded-xl bg-[#1a1a1a] font-bold text-sm outline-none border-2 border-[#2a2a2a] focus:border-[#d4a853] text-[#e8e4dd] placeholder-[#555]">
                 
-                <textarea id="cust-addr" aria-label="Delivery Address" placeholder="Full Delivery Address" class="w-full p-4 rounded-xl bg-[#1a1a1a] font-bold text-sm h-24 outline-none border-2 border-[#2a2a2a] focus:border-[#d4a853] text-[#e8e4dd] placeholder-[#777]"></textarea>
+                <textarea id="cust-addr" placeholder="Full Delivery Address" class="w-full p-4 rounded-xl bg-[#1a1a1a] font-bold text-sm h-24 outline-none border-2 border-[#2a2a2a] focus:border-[#d4a853] text-[#e8e4dd] placeholder-[#555]"></textarea>
                 
                 <div class="flex gap-2 p-1 bg-[#1a1a1a] rounded-xl border border-[#2a2a2a]">
-                    <button aria-label="Pay with Cash on Delivery" id="pay-cod" onclick="setPayment('COD')" class="flex-1 py-3 rounded-lg font-black text-[10px] uppercase bg-[#222] shadow-sm text-[#d4a853]">COD</button>
-                    <button aria-label="Pay Online" id="pay-online" onclick="setPayment('PREPAID')" class="flex-1 py-3 rounded-lg font-black text-[10px] uppercase text-[#777]">Prepaid</button>
+                    <button id="pay-cod" onclick="setPayment('COD')" class="flex-1 py-3 rounded-lg font-black text-[10px] uppercase bg-[#222] shadow-sm text-[#d4a853]">COD</button>
+                    <button id="pay-online" onclick="setPayment('PREPAID')" class="flex-1 py-3 rounded-lg font-black text-[10px] uppercase text-[#666]">Prepaid</button>
                 </div>
                 <div id="qr-container" class="hidden pt-4 flex flex-col items-center">
-                    <p class="text-[10px] font-black uppercase text-[#999] mb-2">Scan to Pay</p>
-                    <img id="payment-qr" src="" alt="Payment QR Code" class="w-48 h-48 rounded-xl border-4 border-[#2a2a2a]">
+                    <p class="text-[10px] font-black uppercase text-[#777] mb-2">Scan to Pay</p>
+                    <img id="payment-qr" src="" class="w-48 h-48 rounded-xl border-4 border-[#2a2a2a]">
                 </div>
             </div>
         </div>
         <div class="p-6 border-t border-[#2a2a2a] bg-[#111]">
             <div class="flex justify-between items-center mb-6">
-                <span class="font-bold text-[#999] text-xs uppercase tracking-widest">Grand Total</span>
+                <span class="font-bold text-[#777] text-xs uppercase tracking-widest">Grand Total</span>
                 <span class="text-3xl font-black text-[#d4a853] italic price-tag">
                     &#8377;<span id="cart-total">0</span>
                 </span>
             </div>
-            <button aria-label="Place WhatsApp Order" onclick="sendOrder()" class="order-btn w-full theme-button text-white py-5 rounded-2xl font-black text-lg shadow-lg active:scale-95 transition-transform">PLACE ORDER VIA WHATSAPP</button>
+            <button onclick="sendOrder()" class="order-btn w-full theme-button text-white py-5 rounded-2xl font-black text-lg shadow-lg active:scale-95 transition-transform">PLACE ORDER VIA WHATSAPP</button>
         </div>
     </div>
 
     <div id="multi-modal" class="fixed inset-0 z-[200] hidden flex items-center justify-center bg-black/80 backdrop-blur-sm">
         <div class="bg-[#1a1a1a] border border-[#333] p-6 rounded-[2.5rem] w-[90%] max-w-sm shadow-2xl relative">
-            <button aria-label="Close Options" onclick="closeMultiModal()" class="absolute top-5 right-6 text-[#777] hover:text-white font-black text-2xl transition-colors">&times;</button>
+            <button onclick="closeMultiModal()" class="absolute top-5 right-6 text-[#777] hover:text-white font-black text-2xl transition-colors">&times;</button>
             <h4 id="multi-modal-title" class="text-2xl font-black italic text-[#f5e6c8] mb-6 text-center pr-4">Select Options</h4>
             <div id="multi-modal-options" class="space-y-3 mb-6 max-h-[50vh] overflow-y-auto pr-2">
             </div>
-            <button aria-label="Save Selected Options" onclick="saveMultiSelection()" class="w-full py-4 rounded-xl font-black text-lg theme-button text-black shadow-lg">Done</button>
+            <button onclick="saveMultiSelection()" class="w-full py-4 rounded-xl font-black text-lg theme-button text-black shadow-lg">Done</button>
         </div>
     </div>
 
@@ -552,68 +530,23 @@
         <div class="bg-[#1a1a1a] border border-red-500/30 p-8 rounded-[2.5rem] shadow-2xl text-center max-w-sm mx-4 transform transition-transform">
             <h2 class="text-3xl font-black italic text-[#f5e6c8] mb-2">Currently Closed</h2>
             <p class="text-[#a8a29e] font-bold text-sm mb-6">We are not accepting orders at this time. You can still browse our menu!</p>
-            <button aria-label="View Menu while closed" onclick="document.getElementById('closed-overlay').style.pointerEvents='none'; document.getElementById('closed-overlay').style.opacity='0';" class="w-full py-4 rounded-xl font-black text-lg bg-[#222] text-white shadow-lg border border-[#333]">View Menu</button>
+            <button onclick="document.getElementById('closed-overlay').style.pointerEvents='none'; document.getElementById('closed-overlay').style.opacity='0';" class="w-full py-4 rounded-xl font-black text-lg bg-[#222] text-white shadow-lg border border-[#333]">View Menu</button>
         </div>
     </div>
 
-    <script defer src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
-    <script defer src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
-    <script defer src="https://www.gstatic.com/firebasejs/9.17.1/firebase-auth-compat.js"></script>
-
     <script>
-        // Wait for deferred Firebase to load
-        window.addEventListener('load', () => {
-            const firebaseConfig = {
-                apiKey: "AIzaSyB99VHhvReaIJ2wZo09cspmJldCtaBbGeg",
-                authDomain: "client2-ac52d.firebaseapp.com",
-                databaseURL: "https://client2-ac52d-default-rtdb.asia-southeast1.firebasedatabase.app",
-                projectId: "client2-ac52d",
-                storageBucket: "client2-ac52d.firebasestorage.app",
-                messagingSenderId: "37110712493",
-                appId: "1:37110712493:web:24752e5bc8ae53cdae9e24",
-                measurementId: "G-WGD5TT4EHH"
-            };
-            firebase.initializeApp(firebaseConfig);
-            const db = firebase.database();
-            
-            db.ref('siteData').on('value', (snap) => {
-                if (snap.exists()) { 
-                    siteData = snap.val(); 
-                    if(!siteData.menu) siteData.menu = [];
-                    if(!siteData.slides) siteData.slides = ["https://images.unsplash.com/photo-1601050690597-df056fb0179a?w=1200"];
-                    if(!siteData.categories) siteData.categories = ["veg", "nonveg", "dessert"];
-                    
-                    if(siteData.manualClose === undefined) siteData.manualClose = false;
-                    if(!siteData.schedule) siteData.schedule = {};
-                    
-                    let stockChanged = false;
-                    const now = new Date();
-                    const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
-                    const istDate = new Date(utc + (3600000 * 5.5));
-                    const todayStr = istDate.toISOString().split('T')[0];
-
-                    siteData.menu.forEach(item => {
-                        if (item.lastUpdated !== todayStr) {
-                            item.stockStatus = true;
-                            item.lastUpdated = todayStr;
-                            stockChanged = true;
-                        } else if (item.stockStatus === undefined) {
-                            item.stockStatus = true;
-                            item.lastUpdated = todayStr;
-                            stockChanged = true;
-                        }
-                    });
-
-                    if (stockChanged) {
-                        db.ref('siteData/menu').set(siteData.menu);
-                    }
-
-                    applyDataToScreen(); 
-                    applyTheme();
-                }
-            });
-        });
-
+        const firebaseConfig = {
+            apiKey: "AIzaSyB99VHhvReaIJ2wZo09cspmJldCtaBbGeg",
+            authDomain: "client2-ac52d.firebaseapp.com",
+            databaseURL: "https://client2-ac52d-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "client2-ac52d",
+            storageBucket: "client2-ac52d.firebasestorage.app",
+            messagingSenderId: "37110712493",
+            appId: "1:37110712493:web:24752e5bc8ae53cdae9e24",
+            measurementId: "G-WGD5TT4EHH"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
         let siteData = { 
             wa: "9100000000", 
             qr: "", 
@@ -629,9 +562,11 @@
         let currentFilter = 'all';
         let slideIndex = 0;
         let paymentMethod = 'COD';
+
         let currentMultiIndex = -1;
         let tempMultiQty = {};
 
+        // ========== CATEGORY SCROLL LOGIC ==========
         let scrollInterval;
         function startScroll(amount) {
             const nav = document.getElementById('cat-nav');
@@ -641,8 +576,9 @@
                 nav.scrollBy({ left: amount, behavior: 'auto' });
             }, 16);
         }
-        function stopScroll() { clearInterval(scrollInterval); }
-        
+        function stopScroll() {
+            clearInterval(scrollInterval);
+        }
         function updateCatArrows() {
             const nav = document.getElementById('cat-nav');
             const leftBtn = document.getElementById('cat-scroll-left');
@@ -650,16 +586,58 @@
             if(!nav || !leftBtn || !rightBtn) return;
             
             const isOverflowing = nav.scrollWidth > (nav.clientWidth + 2);
+
             leftBtn.classList.toggle('hidden', nav.scrollLeft <= 0);
             rightBtn.classList.toggle('hidden', !isOverflowing || (Math.ceil(nav.scrollLeft + nav.clientWidth) >= nav.scrollWidth - 2));
         }
         document.addEventListener('DOMContentLoaded', () => {
             const nav = document.getElementById('cat-nav');
-            if(nav) nav.addEventListener('scroll', updateCatArrows, {passive: true});
-            window.addEventListener('resize', updateCatArrows, {passive: true});
+            if(nav) nav.addEventListener('scroll', updateCatArrows);
+            window.addEventListener('resize', updateCatArrows);
+        });
+        // ===========================================
+
+        db.ref('siteData').on('value', (snap) => {
+            if (snap.exists()) { 
+                siteData = snap.val(); 
+                if(!siteData.menu) siteData.menu = [];
+                if(!siteData.slides) siteData.slides = ["https://images.unsplash.com/photo-1601050690597-df056fb0179a?w=1200"];
+                if(!siteData.categories) siteData.categories = ["veg", "nonveg", "dessert"];
+                
+                // Phase 2: Initialize Schedule & Override logic Defaults
+                if(siteData.manualClose === undefined) siteData.manualClose = false;
+                if(!siteData.schedule) siteData.schedule = {};
+                
+                // Automatic Stock Reset Logic
+                let stockChanged = false;
+                const now = new Date();
+                const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
+                const istDate = new Date(utc + (3600000 * 5.5));
+                const todayStr = istDate.toISOString().split('T')[0];
+
+                siteData.menu.forEach(item => {
+                    if (item.lastUpdated !== todayStr) {
+                        item.stockStatus = true;
+                        item.lastUpdated = todayStr;
+                        stockChanged = true;
+                    } else if (item.stockStatus === undefined) {
+                        item.stockStatus = true;
+                        item.lastUpdated = todayStr;
+                        stockChanged = true;
+                    }
+                });
+
+                if (stockChanged) {
+                    db.ref('siteData/menu').set(siteData.menu);
+                }
+
+                applyDataToScreen(); 
+                applyTheme();
+            }
         });
 
-        function isStoreOpen() {
+        // Phase 2: Store Operational Logic synced to IST
+      function isStoreOpen() {
             if (siteData.manualClose) return false;
             const now = new Date();
             const days = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
@@ -669,26 +647,29 @@
             
             const curMin = (now.getHours() * 60) + now.getMinutes();
 
+            // 1. Check Today's Schedule
             const s = siteData.schedule[todayStr];
             if (s && !s.isClosed) {
                 const [oH, oM] = s.open.split(':').map(Number);
                 const [cH, cM] = s.close.split(':').map(Number);
                 const o = oH * 60 + oM;
                 let c = cH * 60 + cM;
-                if (c === 0) c = 1440; 
+                if (c === 0) c = 1440; // Treat 00:00 as end of day
                 
                 if (o < c && curMin >= o && curMin <= c) return true;
-                if (o > c && curMin >= o) return true; 
+                if (o > c && curMin >= o) return true; // Shift starts today, ends tomorrow
             }
 
+            // 2. Check Yesterday's Schedule (to see if an overnight shift is still active)
             const y = siteData.schedule[yesterdayStr];
             if (y && !y.isClosed) {
                 const [oH, oM] = y.open.split(':').map(Number);
                 const [cH, cM] = y.close.split(':').map(Number);
                 const o = oH * 60 + oM;
                 const c = cH * 60 + cM;
-                if (o > c && curMin <= c) return true; 
+                if (o > c && curMin <= c) return true; // We are in the "after midnight" part
             }
+
             return false;
         }
 
@@ -696,12 +677,14 @@
             const bg = siteData.themeBg || "#0d0d0d";
             const acc = siteData.themeAccent || "#d4a853";
             
+            // Smart Contrast Logic
             const r = parseInt(bg.slice(1,3), 16), g = parseInt(bg.slice(3,5), 16), b = parseInt(bg.slice(5,7), 16);
             const brightness = (r * 299 + g * 587 + b * 114) / 1000;
             const textColor = brightness > 125 ? "#111111" : "#e8e4dd";
             const subTextColor = brightness > 125 ? "#444444" : "#a8a29e";
             const cardBg = brightness > 125 ? "rgba(0,0,0,0.05)" : "rgba(255,255,255,0.05)";
 
+            // Dynamic Golden Text Color for Dish Names
             const accR = parseInt(acc.slice(1,3), 16), accG = parseInt(acc.slice(3,5), 16), accB = parseInt(acc.slice(5,7), 16);
             const darkGold = `rgb(${Math.floor(accR * 0.5)}, ${Math.floor(accG * 0.5)}, ${Math.floor(accB * 0.5)})`;
             const dishTextColor = brightness > 125 ? darkGold : acc;
@@ -726,8 +709,10 @@
             renderCategories();
             renderSlides();
             renderMenu();
+            
             updateCart();
 
+            // Phase 2: Manage the Glass Wall UI based on Store Open logic
             const overlay = document.getElementById('closed-overlay');
             if(!isStoreOpen() && overlay.style.pointerEvents !== 'none') {
                 overlay.classList.remove('hidden');
@@ -738,24 +723,24 @@
             }
         }
 
+        
         function renderCategories() {
             const nav = document.getElementById('cat-nav');
-            nav.innerHTML = `<button aria-label="Filter All" onclick="filterCat('all')" id="cat-all" class="cat-tab ${currentFilter === 'all' ? 'active' : ''} px-5 py-2 rounded-xl font-bold text-[10px] uppercase whitespace-nowrap text-[#a8a29e]">All</button>`;
+            nav.innerHTML = `<button onclick="filterCat('all')" id="cat-all" class="cat-tab ${currentFilter === 'all' ? 'active' : ''} px-5 py-2 rounded-xl font-bold text-[10px] uppercase whitespace-nowrap text-[#a8a29e]">All</button>`;
             
             siteData.categories.forEach(cat => {
                 const label = cat.toUpperCase().replace('-', ' ');
-                nav.innerHTML += `<button aria-label="Filter ${label}" onclick="filterCat('${cat}')" id="cat-${cat}" class="cat-tab ${currentFilter === cat ? 'active' : ''} px-5 py-2 rounded-xl font-bold text-[10px] uppercase whitespace-nowrap text-[#a8a29e]">${label}</button>`;
+                nav.innerHTML += `<button onclick="filterCat('${cat}')" id="cat-${cat}" class="cat-tab ${currentFilter === cat ? 'active' : ''} px-5 py-2 rounded-xl font-bold text-[10px] uppercase whitespace-nowrap text-[#a8a29e]">${label}</button>`;
             });
             setTimeout(updateCatArrows, 100);
         }
 
         function setPayment(m) {
             paymentMethod = m;
-            document.getElementById('pay-cod').className = m === 'COD' ? 'flex-1 py-3 rounded-lg font-black text-[10px] uppercase bg-[#222] shadow-sm text-[#d4a853]' : 'flex-1 py-3 rounded-lg font-black text-[10px] uppercase text-[#777]';
-            document.getElementById('pay-online').className = m === 'PREPAID' ? 'flex-1 py-3 rounded-lg font-black text-[10px] uppercase bg-[#222] shadow-sm text-[#d4a853]' : 'flex-1 py-3 rounded-lg font-black text-[10px] uppercase text-[#777]';
+            document.getElementById('pay-cod').className = m === 'COD' ? 'flex-1 py-3 rounded-lg font-black text-[10px] uppercase bg-[#222] shadow-sm text-[#d4a853]' : 'flex-1 py-3 rounded-lg font-black text-[10px] uppercase text-[#666]';
+            document.getElementById('pay-online').className = m === 'PREPAID' ? 'flex-1 py-3 rounded-lg font-black text-[10px] uppercase bg-[#222] shadow-sm text-[#d4a853]' : 'flex-1 py-3 rounded-lg font-black text-[10px] uppercase text-[#666]';
             document.getElementById('qr-container').classList.toggle('hidden', m !== 'PREPAID');
         }
-        
         function renderSlides() {
             const container = document.getElementById('slides-container');
             container.innerHTML = '';
@@ -767,7 +752,6 @@
             });
             startSlideshow();
         }
-        
         function startSlideshow() {
             clearInterval(window.slideTimer);
             window.slideTimer = setInterval(() => {
@@ -788,7 +772,7 @@
         
         function renderMenu() {
             const grid = document.getElementById('menu-grid'); grid.innerHTML = '';
-            const storeOpen = isStoreOpen(); 
+            const storeOpen = isStoreOpen(); // Check status before rendering
             if (!siteData.catColors) siteData.catColors = {};
 
             siteData.menu.forEach((item, i) => {
@@ -822,8 +806,8 @@
                         cardQtyHtml = `<div class="absolute inset-0 bg-gray-800/90 border border-gray-600 text-gray-400 font-bold rounded-lg flex items-center justify-center shadow-sm text-[10px] uppercase cursor-not-allowed">OUT</div>`;
                     } else {
                         cardQtyHtml = `
-                            <button aria-label="Add ${item.name}" onclick="openMultiModal(${i})" class="${totalQty > 0 ? 'hidden' : 'flex'} absolute inset-0 bg-[var(--bg-main)] border border-[#333] text-[#d4a853] font-bold rounded-lg items-center justify-center shadow-sm text-[10px] uppercase magnetic-btn">Add</button>
-                            <div class="${totalQty > 0 ? 'flex' : 'hidden'} absolute inset-0 theme-button text-black rounded-lg items-center justify-center px-2 shadow-lg cursor-pointer" onclick="openMultiModal(${i})" aria-label="Edit ${item.name} options">
+                            <button onclick="openMultiModal(${i})" class="${totalQty > 0 ? 'hidden' : 'flex'} absolute inset-0 bg-[var(--bg-main)] border border-[#333] text-[#d4a853] font-bold rounded-lg items-center justify-center shadow-sm text-[10px] uppercase magnetic-btn">Add</button>
+                            <div class="${totalQty > 0 ? 'flex' : 'hidden'} absolute inset-0 theme-button text-black rounded-lg items-center justify-center px-2 shadow-lg cursor-pointer" onclick="openMultiModal(${i})">
                                 <span class="font-bold text-[10px] uppercase tracking-wider text-center leading-tight">Edit<br>(${totalQty})</span>
                             </div>
                         `;
@@ -839,11 +823,11 @@
                         cardQtyHtml = `<div class="absolute inset-0 bg-gray-800/90 border border-gray-600 text-gray-400 font-bold rounded-lg flex items-center justify-center shadow-sm text-[10px] uppercase cursor-not-allowed">OUT</div>`;
                     } else {
                         cardQtyHtml = `
-                            <button aria-label="Add ${item.name}" onclick="handleInitialAdd(${i})" class="${quantity > 0 ? 'hidden' : 'flex'} absolute inset-0 bg-[var(--bg-main)] border border-[#333] text-[#d4a853] font-bold rounded-lg items-center justify-center shadow-sm text-[10px] uppercase magnetic-btn">Add</button>
+                            <button onclick="handleInitialAdd(${i})" class="${quantity > 0 ? 'hidden' : 'flex'} absolute inset-0 bg-[var(--bg-main)] border border-[#333] text-[#d4a853] font-bold rounded-lg items-center justify-center shadow-sm text-[10px] uppercase magnetic-btn">Add</button>
                             <div class="${quantity > 0 ? 'flex' : 'hidden'} absolute inset-0 theme-button text-black rounded-lg items-center justify-between px-2 shadow-lg">
-                                <button aria-label="Decrease quantity" onclick="changeQty(${i}, -1)" class="w-6 h-6 flex items-center justify-center font-bold">-</button>
+                                <button onclick="changeQty(${i}, -1)" class="w-6 h-6 flex items-center justify-center font-bold">-</button>
                                 <span class="font-bold text-xs">${quantity}</span>
-                                <button aria-label="Increase quantity" onclick="changeQty(${i}, 1)" class="w-6 h-6 flex items-center justify-center font-bold">+</button>
+                                <button onclick="changeQty(${i}, 1)" class="w-6 h-6 flex items-center justify-center font-bold">+</button>
                             </div>
                         `;
                     }
@@ -852,7 +836,7 @@
                 grid.innerHTML += `
                     <div class="menu-card rounded-[2.5rem] p-4 relative text-left menu-card-glow">
                         <div class="menu-card-img-container">
-                            <img src="${item.img}" alt="${item.name}" loading="lazy" width="400" height="224" class="w-full h-full object-cover">
+                            <img src="${item.img}" class="w-full h-full object-cover" loading="lazy">
                         </div>
                         <div class="mt-5 px-2">
                             <p class="text-[9px] font-black uppercase tracking-widest mb-1" style="color: ${labelColor}">${catLabel}</p>
@@ -899,7 +883,7 @@
                         ${subtext}
                         <p class="text-[10px] text-[#777] font-bold mt-1">${item.quantity} x &#8377;${priceNum}</p>
                     </div>
-                    <button aria-label="Remove item" onclick="removeCompletely(${i})" class="text-red-400 font-black px-2 text-xl">&times;</button>
+                    <button onclick="removeCompletely(${i})" class="text-red-400 font-black px-2 text-xl">&times;</button>
                 </div>`;
             });
             document.getElementById('cart-total').innerText = total;
@@ -943,9 +927,9 @@
                             <p class="text-xs font-black text-[#d4a853] mt-1">&#8377;${opt.price}</p>
                         </div>
                         <div class="flex items-center gap-3 bg-[#111] p-1.5 rounded-lg border border-[#333]">
-                            <button aria-label="Decrease Option Quantity" onclick="changeTempMultiQty(${optIndex}, -1)" class="w-8 h-8 rounded-md bg-[#222] text-white flex items-center justify-center font-bold active:scale-95 transition-transform">-</button>
+                            <button onclick="changeTempMultiQty(${optIndex}, -1)" class="w-8 h-8 rounded-md bg-[#222] text-white flex items-center justify-center font-bold active:scale-95 transition-transform">-</button>
                             <span class="w-5 text-center font-bold text-sm text-white">${qty}</span>
-                            <button aria-label="Increase Option Quantity" onclick="changeTempMultiQty(${optIndex}, 1)" class="w-8 h-8 rounded-md theme-button text-black flex items-center justify-center font-bold active:scale-95 transition-transform">+</button>
+                            <button onclick="changeTempMultiQty(${optIndex}, 1)" class="w-8 h-8 rounded-md theme-button text-black flex items-center justify-center font-bold active:scale-95 transition-transform">+</button>
                         </div>
                     </div>
                 `;
@@ -995,32 +979,33 @@
         }
 
         function sendOrder() {
+        
             const name = document.getElementById('cust-name').value;
             const phoneInput = document.getElementById('cust-phone').value;
-            const phone = phoneInput.replace(/\D/g, ''); 
+            const phone = phoneInput.replace(/\D/g, ''); // Extract only digits for validation
             const addr = document.getElementById('cust-addr').value;
             
+            // Phase 2: Checkout Validation Logic
             if(!isStoreOpen()) return alert("The store is currently closed! We are not accepting orders at this time.");
             if(!name || !addr || !cart.length) return alert("Please fill in all details!");
-            if(phone.length < 7 || phone.length > 15) {
-        return alert("Please enter a valid phone number !");
-    }
-            let secureTotal = 0;
-            cart.forEach(item => {
-                const p = item.optionPrice ? item.optionPrice : (parseInt(item.price.toString().replace(/[^0-9]/g, '')) || 0);
-                secureTotal += (p * item.quantity);
-            });
-
-            let msg = `*NEW ORDER*%0A*Name:* ${name}%0A*Phone:* ${phoneInput}%0A*Address:* ${addr}%0A*Payment:* ${paymentMethod}%0A%0A*Items:*%0A`;
+            if(phone.length !== 10) return alert("Please enter a valid 10-digit phone number!");
     
-            cart.forEach(item => {
-                const optText = item.optionName ? ` [${item.optionName}]` : '';
-                const p = item.optionPrice ? item.optionPrice : item.price;
-                msg += `• ${item.name}${optText} (${item.quantity} x Rs.${p})%0A`;
-            });
+              let secureTotal = 0;
+             cart.forEach(item => {
+            const p = item.optionPrice ? item.optionPrice : (parseInt(item.price.toString().replace(/[^0-9]/g, '')) || 0);
+             secureTotal += (p * item.quantity);
+           });
 
-            msg += `%0A*Total: Rs. ${secureTotal}*`;
-            window.open(`https://wa.me/${siteData.wa}?text=${msg}`, '_blank');
+             let msg = `*NEW ORDER*%0A*Name:* ${name}%0A*Phone:* ${phoneInput}%0A*Address:* ${addr}%0A*Payment:* ${paymentMethod}%0A%0A*Items:*%0A`;
+    
+          cart.forEach(item => {
+          const optText = item.optionName ? ` [${item.optionName}]` : '';
+          const p = item.optionPrice ? item.optionPrice : item.price;
+          msg += `• ${item.name}${optText} (${item.quantity} x Rs.${p})%0A`;
+    });
+
+          msg += `%0A*Total: Rs. ${secureTotal}*`;
+          window.open(`https://wa.me/${siteData.wa}?text=${msg}`, '_blank');
         }
 
         function applyLogo() {
@@ -1094,16 +1079,22 @@
             });
         })();
         
-        // Highly Optimized CSS Variable Cursor
         (function() {
             if (window.matchMedia('(pointer: coarse)').matches) return;
             var dot = document.querySelector('.cursor-dot');
             var ring = document.querySelector('.cursor-ring');
             if (!dot || !ring) return;
+            var mx = 0, my = 0, rx = 0, ry = 0;
             document.addEventListener('mousemove', function(e) {
-                document.documentElement.style.setProperty('--cx', e.clientX + 'px');
-                document.documentElement.style.setProperty('--cy', e.clientY + 'px');
-            }, {passive: true});
+                mx = e.clientX; my = e.clientY;
+                dot.style.left = mx + 'px'; dot.style.top = my + 'px';
+            });
+            function animateRing() {
+                rx += (mx - rx) * 0.12; ry += (my - ry) * 0.12;
+                ring.style.left = rx + 'px'; ring.style.top = ry + 'px';
+                requestAnimationFrame(animateRing);
+            }
+            animateRing();
         })();
         
         (function() {
@@ -1121,7 +1112,7 @@
             window.addEventListener('scroll', function() {
                 if (window.pageYOffset > 50) nav.classList.add('scrolled');
                 else nav.classList.remove('scrolled');
-            }, {passive: true});
+            });
         })();
     </script>
 </body>
